@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "../maestro/catch.hpp"
+#include "catch.hpp"
 #include "../maestro/boardGeneration.h"
 
 TEST_CASE( "importFEN works") {
