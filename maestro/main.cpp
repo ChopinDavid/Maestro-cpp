@@ -6,7 +6,7 @@ using namespace std;
 int main()
 {
     BoardGeneration& boardGeneration = BoardGeneration::getInstance();
-    boardGeneration.importFEN("1nbqkbn1/rppppppr/8/p6p/P6P/8/RPPPPPPR/1NBQKBN1 w - - 2 5");
+    boardGeneration.initiateStandardChess();
     cout << "wp: " << boardGeneration.WP << endl;
     cout << "wR: " << boardGeneration.WR << endl;
     cout << "wN: " << boardGeneration.WN << endl;

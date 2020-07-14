@@ -39,71 +39,7 @@ public:
 
     void initiateStandardChess()
     {
-        char board[8][8];
-
-        for (int i=0; i<64; i++)
-        {
-            int row = floor(i/8);
-            int column = i % 8;
-            if (row == 1)
-            {
-                board[row][column] = 'p';
-            }
-            else if (row == 6)
-            {
-                board[row][column] = 'P';
-            }
-            else if (row == 0)
-            {
-                if (column == 0 || column == 7)
-                {
-                    board[row][column] = 'r';
-                }
-                else if (column == 1 || column == 6)
-                {
-                    board[row][column] = 'n';
-                }
-                else if (column == 2 || column == 5)
-                {
-                    board[row][column] = 'b';
-                }
-                else if (column == 3)
-                {
-                    board[row][column] = 'q';
-                }
-                else
-                {
-                    board[row][column] = 'k';
-                }
-            }
-            else if (row == 7)
-            {
-                if (column == 0 || column == 7)
-                {
-                    board[row][column] = 'R';
-                }
-                else if (column == 1 || column == 6)
-                {
-                    board[row][column] = 'N';
-                }
-                else if (column == 2 || column == 5)
-                {
-                    board[row][column] = 'B';
-                }
-                else if (column == 3)
-                {
-                    board[row][column] = 'Q';
-                }
-                else
-                {
-                    board[row][column] = 'K';
-                }
-            }
-            else
-            {
-                board[row][column] = ' ';
-            }
-        }
+        char board[8][8] = {{'r','n','b','q','k','b','n','r'}, {'p','p','p','p','p','p','p','p'}, {' ',' ',' ',' ',' ',' ',' ',' '}, {' ',' ',' ',' ',' ',' ',' ',' '}, {' ',' ',' ',' ',' ',' ',' ',' '}, {' ',' ',' ',' ',' ',' ',' ',' '}, {'P','P','P','P','P','P','P','P'}, {'R','N','B','Q','K','B','N','R'}};
         arrayToBitboards(board);
     }
 
