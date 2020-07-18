@@ -1,6 +1,8 @@
 #ifndef MOVES_H_INCLUDED
 #define MOVES_H_INCLUDED
 
+#include "boardGeneration.h"
+
 class Moves
 {
 private:
@@ -12,6 +14,8 @@ public:
         static Moves shared;
         return shared;
     }
+
+    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
 
     uint64_t fileA = 72340172838076673;
     uint64_t fileH = 9259542123273814144;
@@ -546,7 +550,8 @@ public:
             int iLocation = countTrailingZeros(i);
             possibility = horizontalAndVerticalMoves(iLocation)&notMyPieces;
             uint64_t j = possibility & ~(possibility&-1);
-            while (j != 0) {
+            while (j != 0)
+            {
                 int index = countTrailingZeros(j);
                 movesList += (std::to_string(iLocation/8) + std::to_string(iLocation%8) + std::to_string(index/8) + std::to_string(index%8));
                 possibility &= ~j;
@@ -557,6 +562,132 @@ public:
         }
         return movesList;
     }
+
+    string possibleQ(uint64_t occupied, uint64_t Q)
+    {
+        uint64_t Q = Q;
+        string movesList = "";
+        uint64_t i = Q & ~(Q&-1);
+        uint64_t possibility;
+        while (i != 0)
+        {
+            int iLocation = countTrailingZeros(i);
+            possibility = (horizontalAndVerticalMoves(iLocation) | diagonalAndAntiDiagonalMoves(iLocation)) & notMyPieces;
+            uint64_t j = possibility & ~(possibility&-1);
+            while (j != 0)
+            {
+                int index = countTrailingZeros(j);
+                movesList += (std::to_string(iLocation/8) + std::to_string(iLocation%8) + std::to_string(index/8) + std::to_string(index%8));
+                possibility &= ~j;
+                j = possibility & ~(possibility&-1);
+            }
+            Q &= ~i;
+            i = Q & ~(Q&-1);
+        }
+        return movesList;
+    }
+
+    string possibleK(uint64_t occupied, uint64_t K)
+    {
+        string movesList = "";
+        uint64_t possibility;
+        int iLocation = countTrailingZeros(K);
+        if (iLocation > 9)
+        {
+            possibility = kingSpan<<(iLocation-9);
+        }
+        else
+        {
+            possibility = kingSpan>>(9-iLocation);
+        }
+        if (iLocation%8<4)
+        {
+            possibility &= ~filesGH&notMyPieces;
+        }
+        else
+        {
+            possibility &= ~filesAB&notMyPieces
+        }
+
+        if (boardGeneration.whiteToMove) {
+            uint64_t safeSquares = ~unsafeForWhite(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+            uint64_t nonWhiteOccupiedSquares = ~(boardGeneration.BP|boardGeneration.BN|boardGeneration.BB|boardGeneration.BR|boardGeneration.BQ);
+            possibility = possibility & safeSquares & nonWhiteOccupiedSquares;
+        } else {
+            uint64_t safeSquares = ~unsafeForBlack(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+            uint64_t nonBlackOccupiedSquares = ~(boardGeneration.BP|boardGeneration.BN|boardGeneration.BB|boardGeneration.BR|boardGeneration.BQ);
+            possibility = possibility & safeSquares & nonBlackOccupiedSquares;
+        }
+
+        uint64_t j = possibility & ~(possibility&-1);
+
+        while (j != 0) {
+            int index = countTrailingZeros(j);
+            movesList += (std::to_string(iLocation/8) + std::to_string(iLocation%8) + std::to_string(index/8) + std::to_string(index%8));
+            possibility &= ~j;
+            j = possibility & ~(possibility&-1);
+        }
+
+        return movesList;
+    }
+
+    string possibleCW(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CWK, bool CWQ) {
+        string movesList = "";
+        uint64_t unsafe = unsafeForWhite(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+
+        bool inCheck = unsafe&WK == 0;
+        if (inCheck) {
+            if (CWK && (((1<<castleRooks[0]) & WR) != 0)) {
+                uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
+                uint64_t kingSideBishopAndKnight = ((1ULL<<61) | (1ULL<<62));
+                bool shortCastleLegal = (occupiedAndUnsafeSquares & kingSideBishopAndKnight) == 0;
+                if (shortCastleLegal) {
+                    movesList += "7476";
+                }
+            }
+
+            if (CWQ && (((1ULL<<castleRooks[1]) & WR) != 0)) {
+                uint64_t knight = (1ULL<<57);
+                uint64_t bishop = (1ULL<<58);
+                uint64_t queen = (1ULL<<59);
+                bool longCastleLegal = ((occupiedSquares | (unsafe & ~knight)) & (knight | bishop | queen)) == 0;
+                if (longCastleLegal) {
+                    movesList += "7472";
+                }
+            }
+        }
+
+        return movesList;
+    }
+
+    string possibleCB(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CBK, bool CBQ) {
+        string movesList = "";
+        uint64_t unsafe = unsafeForBlack(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+
+        bool inCheck = unsafe&BK == 0;
+        if (inCheck) {
+            if (CBK && (((1ULL<<castleRooks[2]) & BR) != 0)) {
+                uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
+                uint64_t kingSideBishopAndKnight = ((1ULL<<5) | (1ULL<<6))
+                bool shortCastleLegal = (occupiedAndUnsafeSquares & kingSideBishopAndKnight) == 0;
+                if (shortCastleLegal) {
+                    movesList += "0406";
+                }
+            }
+            if (CBQ && (((1<<castleRooks[3]) & BR) != 0)) {
+                uint16_t knight = (1ULL<<1);
+                uint64_t bishop = (1ULL<<2);
+                uint64_t queen = (1ULL<<3);
+                bool longCastleLegal = ((occupiedSquares | (unsafe & ~knight) & (knight | bishop | queen)) == 0;
+                if (longCastleLegal) {
+                    movesList += "0402";
+                }
+            }
+        }
+        return movesList;
+    }
+
+
 
     int countLeadingZeros(uint64_t x)
     {
