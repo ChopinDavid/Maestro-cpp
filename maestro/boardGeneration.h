@@ -1,8 +1,10 @@
 #ifndef BOARDGENERATION_H_INCLUDED
 #define BOARDGENERATION_H_INCLUDED
 #include <cmath>
+#include <string>
+#include <stdint.h>
+#include <ctype.h>
 #include "moves.h"
-
 using namespace std;
 
 class BoardGeneration
@@ -90,7 +92,7 @@ public:
         }
     }
 
-    void importFEN(string fenString)
+    void importFEN(string fenString[1000])
     {
         WP = 0;
         WN = 0;
@@ -226,8 +228,7 @@ public:
         charIndex++;
         if (fenString[charIndex] != '-')
         {
-            Moves& moves = Moves::getInstance();
-            EP = moves.fileMasks8[int(tolower(fenString[charIndex])) - 97];
+            EP = Moves::getInstance().fileMasks8[int(tolower(fenString[charIndex])) - 97];
         }
     }
 };

@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include "../maestro/boardGeneration.h"
+#include "../maestro/moves.h"
 
 TEST_CASE( "importFEN works") {
     BoardGeneration& boardGeneration = BoardGeneration::getInstance();
@@ -23,4 +24,13 @@ TEST_CASE( "importFEN works") {
     REQUIRE(boardGeneration.CBK == true);
     REQUIRE(boardGeneration.CWQ == true);
     REQUIRE(boardGeneration.CBQ == false);
+}
+
+TEST_CASE( "horizontal and vertical move generation works") {
+    Moves& moves = Moves::getInstance();
+    moves.occupiedSquares = 8796109801472;
+
+    uint64_t asdf = moves.horizontalAndVerticalMoves(27);
+
+    REQUIRE(asdf == 10);
 }
