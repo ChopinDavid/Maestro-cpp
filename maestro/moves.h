@@ -22,20 +22,19 @@ enum Direction
 
 class Moves
 {
-static Moves *instance;
-Moves() {}
+    static Moves *instance;
+    Moves() {}
 
 public:
     static Moves *getInstance()
     {
-      if (!instance)
-      instance = new Moves;
-      return instance;
+        if (!instance)
+            instance = new Moves;
+        return instance;
     }
 
-    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
 
-    
     uint64_t notMyPieces;
     uint64_t myPieces;
     uint64_t emptySquares;
@@ -59,7 +58,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedRanks += rankMasks8[testingSquare / 8];
                     direction = East;
@@ -81,7 +80,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedFiles += fileMasks8[testingSquare % 8];
                     direction = South;
@@ -103,7 +102,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedRanks += rankMasks8[testingSquare / 8];
                     direction = West;
@@ -125,7 +124,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedFiles += fileMasks8[testingSquare % 8];
                     direction = North;
@@ -162,7 +161,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedAntiDiagonals += antiDiagonalMasks8[(7 - testingSquare % 8) + testingSquare / 8];
                     direction = Southeast;
@@ -184,7 +183,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedDiagonals += diagonalMasks8[testingSquare % 8 + testingSquare / 8];
                     direction = Southwest;
@@ -206,7 +205,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedAntiDiagonals += antiDiagonalMasks8[(7 - testingSquare % 8) + testingSquare / 8];
                     direction = Northwest;
@@ -228,7 +227,7 @@ public:
             }
             else
             {
-                if (1 << testingSquare & (occupiedSquares != 0))
+                if (1ULL << testingSquare & (occupiedSquares != 0))
                 {
                     unblockedDiagonals += diagonalMasks8[testingSquare % 8 + testingSquare / 8];
                     direction = Northeast;
@@ -643,7 +642,7 @@ public:
         bool inCheck = unsafe & (WK == 0);
         if (inCheck)
         {
-            if (CWK && (((1 << castleRooks[0]) & WR) != 0))
+            if (CWK && (((1ULL << castleRooks[0]) & WR) != 0))
             {
                 uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
                 uint64_t kingSideBishopAndKnight = ((1ULL << 61) | (1ULL << 62));
@@ -688,13 +687,14 @@ public:
                     movesList += "0406";
                 }
             }
-            if (CBQ && (((1 << castleRooks[3]) & BR) != 0))
+            if (CBQ && (((1ULL << castleRooks[3]) & BR) != 0))
             {
                 uint16_t knight = (1ULL << 1);
                 uint64_t bishop = (1ULL << 2);
                 uint64_t queen = (1ULL << 3);
                 bool longCastleLegal = ((occupiedSquares | (unsafe & ~knight)) & (knight | bishop | queen)) == 0;
-                if (longCastleLegal) {
+                if (longCastleLegal)
+                {
                     movesList += "0402";
                 }
             }
@@ -871,35 +871,45 @@ public:
         }
 
         //bishop/queen
-        uint64_t QB = WQ|WB;
+        uint64_t QB = WQ | WB;
 
-        if (QB != 0) {
+        if (QB != 0)
+        {
             i = QB & ~(QB - 1);
-            while (i != 0) {
+            while (i != 0)
+            {
                 int iLocation = countTrailingZeros(i);
                 possibility = diagonalAndAntiDiagonalMoves(iLocation);
                 unsafe |= possibility;
                 QB &= ~i;
-                if (QB != 0) {
+                if (QB != 0)
+                {
                     i = QB & ~(QB - 1);
-                } else {
+                }
+                else
+                {
                     i = 0;
                 }
             }
         }
 
         //rook/queen
-        uint64_t QR = WQ|WR;
-        if (QR != 0) {
+        uint64_t QR = WQ | WR;
+        if (QR != 0)
+        {
             i = QR & ~(QR - 1);
-            while (i != 0) {
+            while (i != 0)
+            {
                 int iLocation = countTrailingZeros(i);
                 possibility = horizontalAndVerticalMoves(iLocation);
                 unsafe |= possibility;
                 QR &= ~i;
-                if (QR != 0) {
+                if (QR != 0)
+                {
                     i = QR & ~(QR - 1);
-                } else {
+                }
+                else
+                {
                     i = 0;
                 }
             }
@@ -907,14 +917,20 @@ public:
 
         //king
         int iLocation = countTrailingZeros(WK);
-        if (iLocation > 9) {
-            possibility = kingSpan<<(iLocation - 9);
-        } else {
-            possibility = kingSpan>>(9 - iLocation);
+        if (iLocation > 9)
+        {
+            possibility = kingSpan << (iLocation - 9);
         }
-        if (iLocation%8 < 4) {
+        else
+        {
+            possibility = kingSpan >> (9 - iLocation);
+        }
+        if (iLocation % 8 < 4)
+        {
             possibility &= ~filesGH;
-        } else {
+        }
+        else
+        {
             possibility &= ~filesAB;
         }
         unsafe |= possibility;
@@ -928,7 +944,7 @@ public:
         // does not become 1.
         int total_bits = sizeof(x) * 8;
         int res = 0;
-        while (!(x & (1 << (total_bits - 1))))
+        while (!(x & (1ULL << (total_bits - 1))))
         {
             x = (x << 1);
             res++;
