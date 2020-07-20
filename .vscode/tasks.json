@@ -1,26 +1,55 @@
+//Windows
+// {
+// 	"version": "2.0.0",
+// 	"tasks": [
+// 		{
+// 			"type": "shell",
+// 			"label": "C/C++: g++.exe build active file",
+// 			"command": "C:\\MinGW\\bin\\g++.exe",
+// 			"args": [
+// 				"-g",
+// 				"${file}",
+// 				"-o",
+// 				"${fileDirname}\\${fileBasenameNoExtension}.exe"
+// 			],
+// 			"options": {
+// 				"cwd": "C:\\MinGW\\bin"
+// 			},
+// 			"problemMatcher": [
+// 				"$gcc"
+// 			],
+// 			"group": {
+// 				"kind": "build",
+// 				"isDefault": true
+// 			}
+// 		}
+// 	]
+// }
+
+//MacOS
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"type": "shell",
-			"label": "C/C++: g++.exe build active file",
-			"command": "C:\\MinGW\\bin\\g++.exe",
-			"args": [
-				"-g",
-				"${file}",
-				"-o",
-				"${fileDirname}\\${fileBasenameNoExtension}.exe"
-			],
-			"options": {
-				"cwd": "C:\\MinGW\\bin"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
+	  {
+		"type": "shell",
+		"label": "clang++ build active file",
+		"command": "/usr/bin/clang++",
+		"args": [
+		  "-std=c++17",
+		  "-stdlib=libc++",
+		  "-g",
+		  "${file}",
+		  "-o",
+		  "${fileDirname}/${fileBasenameNoExtension}"
+		],
+		"options": {
+		  "cwd": "${workspaceFolder}"
+		},
+		"problemMatcher": ["$gcc"],
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
 		}
+	  }
 	]
-}
+  }

@@ -4,7 +4,7 @@
 #include <string>
 #include <stdint.h>
 #include <ctype.h>
-#include "moves.h"
+#include "bitboard.h"
 using namespace std;
 
 class BoardGeneration
@@ -116,9 +116,9 @@ public:
         int boardIndex = 0;
         int charIndex = 0;
 
-        while (fenString[charIndex] != ' ')
+        while (fenString->at(charIndex) != ' ')
         {
-            switch (fenString[charIndex])
+            switch (fenString->at(charIndex))
             {
             case 'P':
                 WP |= (1ULL << boardIndex);
@@ -200,13 +200,13 @@ public:
             charIndex++;
         }
         charIndex++;
-        whiteToMove = fenString[charIndex] == 'w';
+        whiteToMove = fenString->at(charIndex) == 'w';
 
         charIndex += 2;
 
-        while (fenString[charIndex] != ' ')
+        while (fenString->at(charIndex) != ' ')
         {
-            switch (fenString[charIndex])
+            switch (fenString->at(charIndex))
             {
             case '-':
                 break;
@@ -226,9 +226,9 @@ public:
             charIndex++;
         }
         charIndex++;
-        if (fenString[charIndex] != '-')
+        if (fenString->at(charIndex) != '-')
         {
-            EP = Moves::getInstance().fileMasks8[int(tolower(fenString[charIndex])) - 97];
+            EP = fileMasks8[int(tolower(fenString->at(charIndex))) - 97];
         }
     }
 };
