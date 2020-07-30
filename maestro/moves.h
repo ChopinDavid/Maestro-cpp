@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <iostream>
 #include <string>
+#include <limits.h>
+#include <bitset>
+#include <sstream>
+#include <iomanip>
+#include <cstring>
 using namespace std;
 
 enum Direction
@@ -22,15 +27,14 @@ enum Direction
 
 class Moves
 {
-    static Moves *instance;
+private:
     Moves() {}
 
 public:
-    static Moves *getInstance()
+    static Moves &getInstance()
     {
-        if (!instance)
-            instance = new Moves;
-        return instance;
+        static Moves shared;
+        return shared;
     }
 
     BoardGeneration &boardGeneration = BoardGeneration::getInstance();
@@ -39,211 +43,417 @@ public:
     uint64_t myPieces;
     uint64_t emptySquares;
     uint64_t occupiedSquares;
+    uint64_t opponentSquares;
 
     uint64_t horizontalAndVerticalMoves(int s)
     {
+        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
-        uint64_t fileMask = rankMasks8[s % 8];
-        uint64_t pseudoPossibleMoves = rankMask ^ fileMask;
-        uint64_t unblockedRanks = 0;
-        uint64_t unblockedFiles = 0;
+        uint64_t fileMask = fileMasks8[s % 8];
+        uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
+        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t maskedBlockers = rookMask & blockersMask;
+        uint64_t possibleMoves = 0;
         Direction direction = North;
+        uint64_t testingSquare = sBinary >> 8;
 
-        int testingSquare = s - 8;
         while (direction == North)
         {
-            if (testingSquare < 0 || testingSquare % 8 != s % 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || testingSquare <= 0)
             {
+                testingSquare = sBinary << 1;
                 direction = East;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (testingSquare >= 256 && ((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedRanks += rankMasks8[testingSquare / 8];
-                    direction = East;
+                    testingSquare >>= 8;
                 }
                 else
                 {
-                    unblockedRanks += rankMasks8[testingSquare / 8];
-                    testingSquare -= 8;
+                    testingSquare = 0;
                 }
             }
         }
 
-        testingSquare = s + 1;
         while (direction == East)
         {
-            if (testingSquare > 63 || testingSquare / 8 != s / 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) | (testingSquare & fileA) != 0)
             {
+                testingSquare = sBinary << 8;
                 direction = South;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedFiles += fileMasks8[testingSquare % 8];
-                    direction = South;
+                    testingSquare <<= 1;
                 }
                 else
                 {
-                    unblockedFiles += fileMasks8[testingSquare % 8];
-                    testingSquare++;
+                    testingSquare = fileA;
                 }
             }
         }
 
-        testingSquare = s + 8;
         while (direction == South)
         {
-            if (testingSquare > 63 || testingSquare % 8 != s % 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || testingSquare >= UINT64_MAX)
             {
+                testingSquare = sBinary >> 1;
                 direction = West;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (testingSquare <= 36028797018963968 && ((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedRanks += rankMasks8[testingSquare / 8];
-                    direction = West;
+                    testingSquare <<= 8;
                 }
                 else
                 {
-                    unblockedRanks += rankMasks8[testingSquare / 8];
-                    testingSquare += 8;
+                    testingSquare = UINT64_MAX;
                 }
             }
         }
 
-        testingSquare = s - 1;
-        while (direction == West)
+        while (testingSquare != 0)
         {
-            if (testingSquare < 0 || testingSquare / 8 != s / 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) | (testingSquare & fileH) != 0)
             {
-                direction = North;
+                testingSquare = 0;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if ((testingSquare & maskedBlockers) == 0)
                 {
-                    unblockedFiles += fileMasks8[testingSquare % 8];
-                    direction = North;
+                    testingSquare >>= 1;
                 }
                 else
                 {
-                    unblockedFiles += fileMasks8[testingSquare % 8];
-                    testingSquare--;
+                    testingSquare = 0;
                 }
             }
         }
-
-        uint64_t mask = unblockedRanks | unblockedFiles;
-        uint64_t possibleMoves = pseudoPossibleMoves & mask;
 
         return possibleMoves;
     }
 
+    uint64_t coveredHorizontalAndVericalSquares(int s)
+    {
+        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t sBinary = 1ULL << s;
+        uint64_t rankMask = rankMasks8[s / 8];
+        uint64_t fileMask = fileMasks8[s % 8];
+        uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
+        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t maskedBlockers = rookMask & blockersMask;
+        uint64_t coveredSquares = 0;
+        Direction direction = North;
+        uint64_t testingSquare = sBinary >> 8;
+
+        while (direction == North)
+        {
+            if (testingSquare <= 0)
+            {
+                testingSquare = sBinary << 1;
+                direction = East;
+            }
+            else if (((testingSquare & maskedBlockers) != 0))
+            {
+                coveredSquares |= testingSquare;
+                testingSquare = sBinary << 1;
+                direction = East;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                testingSquare >>= 8;
+            }
+        }
+
+        while (direction == East)
+        {
+            if ((testingSquare & fileA) != 0)
+            {
+                testingSquare = sBinary << 8;
+                direction = South;
+            }
+            else if (((testingSquare & maskedBlockers) != 0))
+            {
+                coveredSquares |= testingSquare;
+                testingSquare = sBinary << 8;
+                direction = South;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                testingSquare >>= 8;
+            }
+        }
+
+        while (direction == South)
+        {
+            if (testingSquare >= UINT64_MAX || testingSquare == 0)
+            {
+                testingSquare = sBinary >> 1;
+                direction = West;
+            }
+            else if (((testingSquare & maskedBlockers) != 0))
+            {
+                coveredSquares |= testingSquare;
+                testingSquare = sBinary >> 1;
+                direction = West;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                testingSquare <<= 8;
+            }
+        }
+
+        while (testingSquare != 0)
+        {
+            if ((testingSquare & fileH) != 0)
+            {
+                testingSquare = 0;
+            } else if (((testingSquare & maskedBlockers) != 0))
+            {
+                coveredSquares |= testingSquare;
+                testingSquare = 0;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                testingSquare >>= 1;
+            }
+        }
+
+        return coveredSquares;
+    }
+
     uint64_t diagonalAndAntiDiagonalMoves(int s)
     {
+        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t sBinary = 1ULL << s;
         uint64_t diagonalMask = diagonalMasks8[s % 8 + s / 8];
         uint64_t antiDiagonalMask = antiDiagonalMasks8[(7 - s % 8) + s / 8];
-        uint64_t pseudoPossibleMoves = diagonalMask ^ antiDiagonalMask;
-        uint64_t unblockedDiagonals = 0;
-        uint64_t unblockedAntiDiagonals = 0;
+        uint64_t bishopMask = (diagonalMask | antiDiagonalMask) & ~(sBinary);
+        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t maskedBlockers = bishopMask & blockersMask;
+        uint64_t possibleMoves = 0;
         Direction direction = Northeast;
+        uint64_t testingSquare = sBinary >> 7;
 
-        int testingSquare = s - 7;
         while (direction == Northeast)
         {
-            if (testingSquare < 0 || testingSquare > 63 || testingSquare / 8 == s / 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || (testingSquare & fileA) != 0 || testingSquare <= 0)
             {
+                testingSquare = sBinary << 9;
                 direction = Southeast;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (testingSquare >= 256 && ((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedAntiDiagonals += antiDiagonalMasks8[(7 - testingSquare % 8) + testingSquare / 8];
-                    direction = Southeast;
+                    testingSquare >>= 7;
                 }
                 else
                 {
-                    unblockedAntiDiagonals += antiDiagonalMasks8[(7 - testingSquare % 8) + testingSquare / 8];
-                    testingSquare -= 7;
+                    testingSquare = 0;
                 }
             }
         }
 
-        testingSquare = s + 9;
         while (direction == Southeast)
         {
-            if (testingSquare > 63 || testingSquare / 8 == s / 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileA) != 0) || testingSquare >= UINT64_MAX)
             {
+                testingSquare = sBinary << 7;
                 direction = Southwest;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (testingSquare <= 18014398509481984 && ((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedDiagonals += diagonalMasks8[testingSquare % 8 + testingSquare / 8];
-                    direction = Southwest;
+                    testingSquare <<= 9;
                 }
                 else
                 {
-                    unblockedDiagonals += diagonalMasks8[testingSquare % 8 + testingSquare / 8];
-                    testingSquare += 9;
+                    testingSquare = UINT64_MAX;
                 }
             }
         }
 
-        testingSquare = s + 7;
         while (direction == Southwest)
         {
-            if (testingSquare<0 | testingSquare> 63 || testingSquare % 8 == s % 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileH) != 0) || testingSquare >= UINT64_MAX)
             {
+                testingSquare = sBinary >> 9;
                 direction = Northwest;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (testingSquare <= 72057594037927936 && ((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedAntiDiagonals += antiDiagonalMasks8[(7 - testingSquare % 8) + testingSquare / 8];
-                    direction = Northwest;
+                    testingSquare <<= 7;
                 }
                 else
                 {
-                    unblockedAntiDiagonals += antiDiagonalMasks8[(7 - testingSquare % 8) + testingSquare / 8];
-                    testingSquare += 7;
+                    testingSquare = UINT64_MAX;
                 }
             }
         }
 
-        testingSquare = s - 9;
-        while (direction == Northwest)
+        while (testingSquare != 0)
         {
-            if (testingSquare < 0 || testingSquare / 8 == s / 8)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileH) != 0) || testingSquare <= 0)
             {
-                direction = Northeast;
+                testingSquare = 0;
             }
             else
             {
-                if (1ULL << testingSquare & (occupiedSquares != 0))
+                possibleMoves |= testingSquare;
+                if (testingSquare >= 512 && ((testingSquare & maskedBlockers) == 0))
                 {
-                    unblockedDiagonals += diagonalMasks8[testingSquare % 8 + testingSquare / 8];
-                    direction = Northeast;
+                    testingSquare >>= 9;
                 }
                 else
                 {
-                    unblockedDiagonals += diagonalMasks8[testingSquare % 8 + testingSquare / 8];
-                    testingSquare -= 9;
+                    testingSquare = 0;
                 }
             }
         }
 
-        uint64_t mask = unblockedDiagonals | unblockedAntiDiagonals;
-        uint64_t possibleMoves = pseudoPossibleMoves & mask;
-
         return possibleMoves;
+    }
+
+    uint64_t coveredDiagonalAndAntiDiagonalSquares(int s)
+    {
+        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t sBinary = 1ULL << s;
+        uint64_t diagonalMask = diagonalMasks8[s % 8 + s / 8];
+        uint64_t antiDiagonalMask = antiDiagonalMasks8[(7 - s % 8) + s / 8];
+        uint64_t bishopMask = (diagonalMask | antiDiagonalMask) & ~(sBinary);
+        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t maskedBlockers = bishopMask & blockersMask;
+        uint64_t coveredSquares = 0;
+        Direction direction = Northeast;
+        uint64_t testingSquare = sBinary >> 7;
+
+        while (direction == Northeast)
+        {
+
+            if (((testingSquare & fileA) != 0) || testingSquare <= 0)
+            {
+                testingSquare = sBinary << 9;
+                direction = Southeast;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                if ((testingSquare & maskedBlockers) != 0)
+                {
+                    testingSquare = sBinary << 9;
+                    direction = Southeast;
+                }
+                else if (testingSquare >= 256)
+                {
+                    testingSquare >>= 7;
+                }
+                else
+                {
+                    testingSquare = 0;
+                }
+            }
+        }
+
+        while (direction == Southeast)
+        {
+            if (((testingSquare & fileA) != 0) || testingSquare >= UINT64_MAX || testingSquare == 0)
+            {
+                testingSquare = sBinary << 7;
+                direction = Southwest;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                if ((testingSquare & maskedBlockers) != 0)
+                {
+                    testingSquare = sBinary << 7;
+                    direction = Southwest;
+                }
+                else if (testingSquare <= 18014398509481984)
+                {
+                    testingSquare <<= 9;
+                }
+                else
+                {
+                    testingSquare = UINT64_MAX;
+                }
+            }
+        }
+
+        while (direction == Southwest)
+        {
+
+            if (((testingSquare & fileH) != 0) || testingSquare >= UINT64_MAX || testingSquare == 0)
+            {
+                testingSquare = sBinary >> 9;
+                direction = Northwest;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                if ((testingSquare & maskedBlockers) != 0)
+                {
+                    testingSquare = sBinary >> 9;
+                    direction = Northwest;
+                }
+                else if (testingSquare <= 72057594037927936)
+                {
+                    testingSquare <<= 7;
+                }
+                else
+                {
+                    testingSquare = UINT64_MAX;
+                }
+            }
+        }
+
+        while (testingSquare != 0)
+        {
+            if (((testingSquare & fileH) != 0) || testingSquare <= 0)
+            {
+                testingSquare = 0;
+            }
+            else
+            {
+                coveredSquares |= testingSquare;
+                if ((testingSquare & maskedBlockers) != 0)
+                {
+                    testingSquare = 0;
+                }
+                else if (testingSquare >= 512)
+                {
+                    testingSquare >>= 9;
+                }
+                else
+                {
+                    testingSquare = 0;
+                }
+            }
+        }
+
+        return coveredSquares;
     }
 
     string possibleWP(uint64_t WP, uint64_t BP, uint64_t EP)
@@ -514,76 +724,27 @@ public:
         return movesList;
     }
 
-    string possibleB(uint64_t occupiedSquares, uint64_t B)
+    string possibleB(uint64_t B)
     {
-        uint64_t mutableB = B;
-        string movesList = "";
-        uint64_t i = mutableB & ~(mutableB - 1);
-        uint64_t possibility;
-        while (i != 0)
-        {
-            int iLocation = countTrailingZeros(i);
-            possibility = diagonalAndAntiDiagonalMoves(iLocation) & notMyPieces;
-            uint64_t j = possibility & ~(possibility & -1);
-            while (j != 0)
-            {
-                int index = countTrailingZeros(j);
-                movesList += (to_string(iLocation / 8) + to_string(iLocation % 8) + to_string(index / 8) + to_string(index % 8));
-                possibility &= ~j;
-                j = possibility & ~(possibility & -1);
-            }
-            mutableB &= ~i;
-            i = mutableB & ~(mutableB & -1);
-        }
-        return movesList;
+        uint64_t possibleDestinations = diagonalAndAntiDiagonalMoves(B);
+        string pos = convertStartAndPossibleDestinationsToMovesString(B, possibleDestinations);
+        return pos;
     }
 
-    string possibleR(uint64_t occupied, uint64_t R)
+    string possibleR(uint64_t R)
     {
-        uint64_t mutableR = R;
-        string movesList = "";
-        uint64_t i = mutableR & ~(mutableR - 1);
-        uint64_t possibility;
-        while (i != 0)
-        {
-            int iLocation = countTrailingZeros(i);
-            possibility = horizontalAndVerticalMoves(iLocation) & notMyPieces;
-            uint64_t j = possibility & ~(possibility & -1);
-            while (j != 0)
-            {
-                int index = countTrailingZeros(j);
-                movesList += (to_string(iLocation / 8) + to_string(iLocation % 8) + to_string(index / 8) + to_string(index % 8));
-                possibility &= ~j;
-                j = possibility & ~(possibility & -1);
-            }
-            mutableR &= ~i;
-            i = mutableR & ~(mutableR & -1);
-        }
-        return movesList;
+        uint64_t possibleDestinations = horizontalAndVerticalMoves(R);
+        return convertStartAndPossibleDestinationsToMovesString(R, possibleDestinations);
+        ;
     }
 
-    string possibleQ(uint64_t occupied, uint64_t Q)
+    string possibleQ(int Q)
     {
-        uint64_t mutableQ = Q;
-        string movesList = "";
-        uint64_t i = mutableQ & ~(mutableQ & -1);
-        uint64_t possibility;
-        while (i != 0)
-        {
-            int iLocation = countTrailingZeros(i);
-            possibility = (horizontalAndVerticalMoves(iLocation) | diagonalAndAntiDiagonalMoves(iLocation)) & notMyPieces;
-            uint64_t j = possibility & ~(possibility & -1);
-            while (j != 0)
-            {
-                int index = countTrailingZeros(j);
-                movesList += (to_string(iLocation / 8) + to_string(iLocation % 8) + to_string(index / 8) + to_string(index % 8));
-                possibility &= ~j;
-                j = possibility & ~(possibility & -1);
-            }
-            mutableQ &= ~i;
-            i = mutableQ & ~(mutableQ & -1);
-        }
-        return movesList;
+        uint64_t hv = horizontalAndVerticalMoves(Q);
+        uint64_t da = diagonalAndAntiDiagonalMoves(Q);
+        uint64_t possibleDestinations = hv | da;
+
+        return convertStartAndPossibleDestinationsToMovesString(Q, possibleDestinations);
     }
 
     string possibleK(uint64_t occupied, uint64_t K)
@@ -610,13 +771,13 @@ public:
 
         if (boardGeneration.whiteToMove)
         {
-            uint64_t safeSquares = ~unsafeForWhite(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+            uint64_t safeSquares = ~unsafeForWhite();
             uint64_t nonWhiteOccupiedSquares = ~(boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ);
             possibility = possibility & safeSquares & nonWhiteOccupiedSquares;
         }
         else
         {
-            uint64_t safeSquares = ~unsafeForBlack(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+            uint64_t safeSquares = ~unsafeForBlack();
             uint64_t nonBlackOccupiedSquares = ~(boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ);
             possibility = possibility & safeSquares & nonBlackOccupiedSquares;
         }
@@ -637,7 +798,7 @@ public:
     string possibleCW(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CWK, bool CWQ)
     {
         string movesList = "";
-        uint64_t unsafe = unsafeForWhite(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+        uint64_t unsafe = unsafeForWhite();
 
         bool inCheck = unsafe & (WK == 0);
         if (inCheck)
@@ -672,7 +833,7 @@ public:
     string possibleCB(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CBK, bool CBQ)
     {
         string movesList = "";
-        uint64_t unsafe = unsafeForBlack(boardGeneration.WP, boardGeneration.WN, boardGeneration.WB, boardGeneration.WR, boardGeneration.WQ, boardGeneration.WK, boardGeneration.BP, boardGeneration.BN, boardGeneration.BB, boardGeneration.BR, boardGeneration.BQ, boardGeneration.BK);
+        uint64_t unsafe = unsafeForBlack();
 
         bool inCheck = unsafe & (BK == 0);
         if (inCheck)
@@ -702,239 +863,182 @@ public:
         return movesList;
     }
 
-    uint64_t unsafeForWhite(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK)
+    uint64_t unsafeForWhite()
     {
-        uint64_t mutableBN = BN;
-        uint64_t unsafe;
-        occupiedSquares = WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK;
-
+        occupiedSquares = boardGeneration.occupied();
+        opponentSquares = boardGeneration.whitePieces();
+        uint64_t unsafe = 0;
+        occupiedSquares = boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ | boardGeneration.WK | boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ | boardGeneration.BK;
         //pawn
-        unsafe = (BP << 7) & ~fileH;  //pawn capture right
-        unsafe |= (BP << 9) & ~fileA; //pawn capture left
-
+        uint64_t rightCaptures = ((boardGeneration.BP << 7) & ~fileH);
+        uint64_t leftCaptures = ((boardGeneration.BP << 9) & ~fileA);
+        uint64_t pawnCaptures = rightCaptures | leftCaptures;
+        unsafe = pawnCaptures;
         uint64_t possibility;
-
         //knight
-        uint64_t i;
-        if (mutableBN != 0)
+        uint64_t knightCaptures = 0;
+        uint64_t i = boardGeneration.BN & ~(boardGeneration.BN - 1);
+        while (i != 0)
         {
-            i = mutableBN & ~(mutableBN - 1);
-            while (i != 0)
+            int iLocation = countTrailingZeros(i);
+            if (iLocation > 18)
             {
-                int iLocation = countTrailingZeros(i);
-                if (iLocation > 18)
-                {
-                    possibility = knightSpan << (iLocation - 18);
-                }
-                else
-                {
-                    possibility = knightSpan >> (18 - iLocation);
-                }
-
-                if (iLocation % 8 < 4)
-                {
-                    possibility &= ~filesGH;
-                }
-                else
-                {
-                    possibility &= ~filesAB;
-                }
-
-                unsafe |= possibility;
-                mutableBN &= ~i;
-                if (mutableBN != 0)
-                {
-                    i = mutableBN & ~(mutableBN - 1);
-                }
-                else
-                {
-                    i = 0;
-                }
+                knightCaptures = knightSpan << (iLocation - 18);
             }
+            else
+            {
+                knightCaptures = knightSpan >> (18 - iLocation);
+            }
+            if (iLocation % 8 < 4)
+            {
+                knightCaptures &= ~filesGH;
+            }
+            else
+            {
+                knightCaptures &= ~filesAB;
+            }
+            unsafe |= knightCaptures;
+            boardGeneration.BN &= ~i;
+            i = boardGeneration.BN & ~(boardGeneration.BN - 1);
         }
-
         //bishop/queen
-        uint64_t QB = BQ | BB;
-        if (QB != 0)
+        uint64_t bishopQueenCaptures = 0;
+        uint64_t QB = boardGeneration.BQ | boardGeneration.BB;
+        string QBBinary = convertBitboardToStringRep(QB);
+        for (int i = 0; i < strlen(QBBinary.c_str()); i++)
         {
-            i = QB & ~(QB - 1);
-            while (i != 0)
+            char character = QBBinary[i];
+            if (character == '1')
             {
-                int iLocation = countTrailingZeros(i);
-                possibility = diagonalAndAntiDiagonalMoves(iLocation);
-                unsafe |= possibility;
-                QB &= ~i;
-                if (QB != 0)
-                {
-                    i = QB & ~(QB - 1);
-                }
-                else
-                {
-                    i = 0;
-                }
+                uint64_t covered = coveredDiagonalAndAntiDiagonalSquares(i);
+                bishopQueenCaptures |= covered;
             }
         }
-
+        unsafe |= bishopQueenCaptures;
         //rook/queen
-        uint64_t QR = BQ | BR;
-        if (QR != 0)
+        uint64_t rookQueenCaptures = 0;
+        uint64_t QR = boardGeneration.BQ | boardGeneration.BR;
+        string QRBinary = convertBitboardToStringRep(QR);
+        for (int i = 0; i < strlen(QRBinary.c_str()); i++)
         {
-            while (i != 0)
+            char character = QRBinary[i];
+            if (character == '1')
             {
-                int iLocation = countTrailingZeros(i);
-                possibility = horizontalAndVerticalMoves(iLocation);
-                unsafe |= possibility;
-                QR &= ~i;
-                if (QR != 0)
-                {
-                    i = QR & ~(QR - 1);
-                }
-                else
-                {
-                    i = 0;
-                }
+                uint64_t covered = coveredHorizontalAndVericalSquares(i);
+                rookQueenCaptures |= covered;
             }
         }
-
+        unsafe |= rookQueenCaptures;
         //king
-        int iLocation = countTrailingZeros(BK);
+        uint64_t kingCaptures = 0;
+        int iLocation = countTrailingZeros(boardGeneration.BK);
         if (iLocation > 9)
         {
-            possibility = kingSpan << (iLocation - 9);
+            kingCaptures = kingSpan << (iLocation - 9);
         }
         else
         {
-            possibility = kingSpan >> (9 - iLocation);
+            kingCaptures = kingSpan >> (9 - iLocation);
         }
         if (iLocation % 8 < 4)
         {
-            possibility &= ~filesGH;
+            kingCaptures &= ~filesGH;
         }
         else
         {
-            possibility &= ~filesAB;
+            kingCaptures &= ~filesAB;
         }
-        unsafe |= possibility;
-
+        unsafe |= kingCaptures;
         return unsafe;
     }
 
-    uint64_t unsafeForBlack(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK)
+    uint64_t unsafeForBlack()
     {
-        uint64_t mutableWN = WN;
-        uint64_t unsafe;
-        occupiedSquares = WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK;
-
+        occupiedSquares = boardGeneration.occupied();
+        opponentSquares = boardGeneration.blackPieces();
+        uint64_t unsafe = 0;
+        occupiedSquares = boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ | boardGeneration.WK | boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ | boardGeneration.BK;
         //pawn
-        unsafe = (WP >> 7) & ~fileA;  //pawn capture right
-        unsafe |= (WP >> 9) & ~fileH; //pawn capture left
-
+        uint64_t rightCaptures = ((boardGeneration.WP >> 7) & ~fileA);
+        uint64_t leftCaptures = ((boardGeneration.WP >> 9) & ~fileH);
+        uint64_t pawnCaptures = rightCaptures | leftCaptures;
+        unsafe = pawnCaptures;
         uint64_t possibility;
-
         //knight
-        uint64_t i;
-        if (mutableWN != 0)
+        uint64_t knightCaptures = 0;
+        uint64_t i = boardGeneration.WN & ~(boardGeneration.WN - 1);
+        while (i != 0)
         {
-            i = mutableWN & ~(mutableWN - 1);
-            while (i != 0)
+            int iLocation = countTrailingZeros(i);
+            if (iLocation > 18)
             {
-                int iLocation = countTrailingZeros(i);
-                if (iLocation > 18)
-                {
-                    possibility = knightSpan << (iLocation - 18);
-                }
-                else
-                {
-                    possibility = knightSpan >> (18 - iLocation);
-                }
-
-                if (iLocation % 8 < 4)
-                {
-                    possibility &= ~filesGH;
-                }
-                else
-                {
-                    possibility &= ~filesAB;
-                }
-
-                unsafe |= possibility;
-                mutableWN &= ~i;
-                if (mutableWN != 0)
-                {
-                    i = mutableWN & ~(mutableWN - 1);
-                }
-                else
-                {
-                    i = 0;
-                }
+                knightCaptures = knightSpan << (iLocation - 18);
             }
+            else
+            {
+                knightCaptures = knightSpan >> (18 - iLocation);
+            }
+            if (iLocation % 8 < 4)
+            {
+                knightCaptures &= ~filesGH;
+            }
+            else
+            {
+                knightCaptures &= ~filesAB;
+            }
+            unsafe |= knightCaptures;
+            boardGeneration.WN &= ~i;
+            i = boardGeneration.WN & ~(boardGeneration.WN - 1);
         }
 
         //bishop/queen
-        uint64_t QB = WQ | WB;
-
-        if (QB != 0)
+        uint64_t bishopQueenCaptures = 0;
+        uint64_t QB = boardGeneration.WQ | boardGeneration.WB;
+        string QBBinary = convertBitboardToStringRep(QB);
+        for (int i = 0; i < strlen(QBBinary.c_str()); i++)
         {
-            i = QB & ~(QB - 1);
-            while (i != 0)
+            char character = QBBinary[i];
+            if (character == '1')
             {
-                int iLocation = countTrailingZeros(i);
-                possibility = diagonalAndAntiDiagonalMoves(iLocation);
-                unsafe |= possibility;
-                QB &= ~i;
-                if (QB != 0)
-                {
-                    i = QB & ~(QB - 1);
-                }
-                else
-                {
-                    i = 0;
-                }
+                uint64_t covered = coveredDiagonalAndAntiDiagonalSquares(i);
+                bishopQueenCaptures |= covered;
             }
         }
-
+        unsafe |= bishopQueenCaptures;
         //rook/queen
-        uint64_t QR = WQ | WR;
-        if (QR != 0)
+        uint64_t rookQueenCaptures = 0;
+        uint64_t QR = boardGeneration.WQ | boardGeneration.WR;
+        string QRBinary = convertBitboardToStringRep(QR);
+        for (int i = 0; i < strlen(QRBinary.c_str()); i++)
         {
-            i = QR & ~(QR - 1);
-            while (i != 0)
+            char character = QRBinary[i];
+            if (character == '1')
             {
-                int iLocation = countTrailingZeros(i);
-                possibility = horizontalAndVerticalMoves(iLocation);
-                unsafe |= possibility;
-                QR &= ~i;
-                if (QR != 0)
-                {
-                    i = QR & ~(QR - 1);
-                }
-                else
-                {
-                    i = 0;
-                }
+                uint64_t covered = coveredHorizontalAndVericalSquares(i);
+                rookQueenCaptures |= covered;
             }
         }
-
+        unsafe |= rookQueenCaptures;
         //king
-        int iLocation = countTrailingZeros(WK);
+        uint64_t kingCaptures = 0;
+        int iLocation = countTrailingZeros(boardGeneration.WK);
         if (iLocation > 9)
         {
-            possibility = kingSpan << (iLocation - 9);
+            kingCaptures = kingSpan << (iLocation - 9);
         }
         else
         {
-            possibility = kingSpan >> (9 - iLocation);
+            kingCaptures = kingSpan >> (9 - iLocation);
         }
         if (iLocation % 8 < 4)
         {
-            possibility &= ~filesGH;
+            kingCaptures &= ~filesGH;
         }
         else
         {
-            possibility &= ~filesAB;
+            kingCaptures &= ~filesAB;
         }
-        unsafe |= possibility;
-
+        unsafe |= kingCaptures;
         return unsafe;
     }
 
@@ -962,6 +1066,62 @@ public:
             count++;
         }
         return count;
+    }
+
+    uint64_t bitSwapped(uint64_t i)
+    {
+        uint64_t v = i;
+        uint64_t s = sizeof(v) * CHAR_BIT;
+        uint64_t mask = 0;
+        while (s > 1)
+        {
+            s = s >> 1;
+            mask ^= mask << s;
+            v = ((v >> s) & mask) | ((v << s) & ~mask);
+        }
+        return v;
+    }
+
+    string convertStartAndPossibleDestinationsToMovesString(int s, uint64_t pd)
+    {
+        string movesList = "";
+
+        std::string binaryPossibilities = convertBitboardToStringRep(pd);
+        for (int i = 0; i < strlen(binaryPossibilities.c_str()); i++)
+        {
+            char character = binaryPossibilities[i];
+
+            if (character == '1')
+            {
+
+                string start = to_string(s);
+                if (strlen(start.c_str()) == 1)
+                {
+                    start = "0" + start;
+                }
+                string end = to_string(i);
+                if (strlen(end.c_str()) == 1)
+                {
+                    end = "0" + end;
+                }
+
+                movesList = movesList + start + end;
+            }
+        }
+        return movesList;
+    }
+
+    string convertBitboardToStringRep(uint64_t bitboard)
+    {
+        string bitBoardString = std::bitset<64>(bitboard).to_string();
+
+        //Pad binaryPossibilities string to 64 chars
+        std::stringstream ss;
+        ss << std::setw(64) << std::setfill('0') << bitBoardString;
+        bitBoardString = ss.str();
+
+        reverse(bitBoardString.begin(), bitBoardString.end());
+        return bitBoardString;
     }
 };
 

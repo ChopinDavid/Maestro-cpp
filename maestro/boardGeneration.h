@@ -33,6 +33,19 @@ public:
     uint64_t BK = 0;
     uint64_t EP = 0;
 
+    uint64_t whitePieces() {
+        return WP | WN | WB | WR | WQ | WK;
+    }
+
+    uint64_t blackPieces() {
+        return BP | BN | BB | BR | BQ | BK;
+    }
+
+    uint64_t occupied() {
+        return whitePieces() + blackPieces();
+    }
+    
+
     bool whiteToMove = true;
     bool CWK = true;
     bool CWQ = true;
@@ -92,7 +105,7 @@ public:
         }
     }
 
-    void importFEN(string fenString[1000])
+    void importFEN(string fenString)
     {
         WP = 0;
         WN = 0;
@@ -116,9 +129,9 @@ public:
         int boardIndex = 0;
         int charIndex = 0;
 
-        while (fenString->at(charIndex) != ' ')
+        while (fenString[charIndex] != ' ')
         {
-            switch (fenString->at(charIndex))
+            switch (fenString[charIndex])
             {
             case 'P':
                 WP |= (1ULL << boardIndex);
@@ -200,13 +213,13 @@ public:
             charIndex++;
         }
         charIndex++;
-        whiteToMove = fenString->at(charIndex) == 'w';
+        whiteToMove = fenString[charIndex] == 'w';
 
         charIndex += 2;
 
-        while (fenString->at(charIndex) != ' ')
+        while (fenString[charIndex] != ' ')
         {
-            switch (fenString->at(charIndex))
+            switch (fenString[charIndex])
             {
             case '-':
                 break;
@@ -226,9 +239,9 @@ public:
             charIndex++;
         }
         charIndex++;
-        if (fenString->at(charIndex) != '-')
+        if (fenString[charIndex] != '-')
         {
-            EP = fileMasks8[int(tolower(fenString->at(charIndex))) - 97];
+            EP = fileMasks8[int(tolower(fenString[charIndex])) - 97];
         }
     }
 };
