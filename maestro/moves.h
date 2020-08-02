@@ -41,7 +41,6 @@ public:
 
     uint64_t notMyPieces;
     uint64_t myPieces;
-    uint64_t emptySquares;
     uint64_t occupiedSquares;
     uint64_t opponentSquares;
 
@@ -456,14 +455,13 @@ public:
         return coveredSquares;
     }
 
-    string possibleWP(uint64_t WP, uint64_t BP, uint64_t EP)
+    string possibleWP()
     {
         string moveList = "";
         uint64_t possibility;
 
         //first, look at right-captures
-        uint64_t opponentPieces = occupiedSquares & ~myPieces;
-        uint64_t pawnMoves = (WP >> 7) & opponentPieces & ~rank8 & ~fileA;
+        uint64_t pawnMoves = (boardGeneration.WP >> 7) & boardGeneration.blackPieces() & ~rank8 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -476,7 +474,7 @@ public:
         }
 
         //now, left-captures
-        pawnMoves = (WP >> 9) & opponentPieces & ~rank8 & ~fileH;
+        pawnMoves = (boardGeneration.WP >> 9) & boardGeneration.blackPieces() & ~rank8 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -489,7 +487,7 @@ public:
         }
 
         //now, moving 1 forward
-        pawnMoves = (WP >> 8) & emptySquares & ~rank8;
+        pawnMoves = (boardGeneration.WP >> 8) & boardGeneration.empty() & ~rank8;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -502,7 +500,7 @@ public:
         }
 
         //now, moving 2 forward
-        pawnMoves = (WP >> 16) & emptySquares & (emptySquares >> 8) & rank4;
+        pawnMoves = (boardGeneration.WP >> 16) & boardGeneration.empty() & (boardGeneration.empty() >> 8) & rank4;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -515,52 +513,56 @@ public:
         }
 
         //now, promoting, capturing right
-        pawnMoves = (WP >> 7) & occupiedSquares & opponentPieces & rank8 & ~fileA;
+        pawnMoves = (boardGeneration.WP >> 7) & boardGeneration.occupied() & boardGeneration.blackPieces() & rank8 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
             {
                 if (((pawnMoves >> i) & 1) == 1)
                 {
-                    moveList += (to_string(i / 8 - 1) + to_string(i % 8) + "QP" + to_string(i / 8 - 1) + to_string(i % 8) + "RP" + to_string(i / 8 - 1) + to_string(i % 8) + "BP" + to_string(i / 8 - 1) + to_string(i % 8) + "NP");
+                    string movementString = to_string(i % 8 - 1) + to_string(i % 8);
+                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
 
         //now, promoting, capturing left
-        pawnMoves = (WP >> 9) & occupiedSquares & opponentPieces & rank8 & ~fileH;
+        pawnMoves = (boardGeneration.WP >> 9) & boardGeneration.occupied() & boardGeneration.blackPieces() & rank8 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
             {
                 if (((pawnMoves >> i) & 1) == 1)
                 {
-                    moveList += (to_string(i / 8 + 1) + to_string(i % 8) + "QP" + to_string(i / 8 + 1) + to_string(i % 8) + "RP" + to_string(i / 8 + 1) + to_string(i % 8) + "BP" + to_string(i / 8 + 1) + to_string(i % 8) + "NP");
+                    string movementString = to_string(i % 8 + 1) + to_string(i % 8);
+                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
 
         //now, promoting, moving 1 forward
-        pawnMoves = (WP >> 8) & emptySquares & rank8;
+        pawnMoves = (boardGeneration.WP >> 8) & boardGeneration.empty() & rank8;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
             {
                 if (((pawnMoves >> i) & 1) == 1)
                 {
-                    moveList += (to_string(i / 8) + to_string(i % 8) + "QP" + to_string(i / 8) + to_string(i % 8) + "RP" + to_string(i / 8) + to_string(i % 8) + "BP" + to_string(i / 8) + to_string(i % 8) + "NP");
+                    string movementString = to_string(i % 8) + to_string(i % 8);
+                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
 
-        possibility = (WP << 1) & BP & rank5 & ~fileA & EP;
+        //En passant
+        possibility = (boardGeneration.WP << 1) & boardGeneration.BP & rank5 & ~fileA & boardGeneration.EP;
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
             moveList += (to_string(index % 8 - 1) + to_string(index % 8) + "WE");
         }
 
-        possibility = (WP >> 1) & BP & rank5 & ~fileH & EP;
+        possibility = (boardGeneration.WP >> 1) & boardGeneration.BP & rank5 & ~fileH & boardGeneration.EP;
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
@@ -570,14 +572,13 @@ public:
         return moveList;
     }
 
-    string possibleBP(uint64_t BP, uint64_t WP, uint64_t EP)
+    string possibleBP()
     {
         string moveList = "";
         uint64_t possibility;
 
-        //first, let's look at right-captures
-        uint64_t opponentPieces = occupiedSquares & ~myPieces;
-        uint64_t pawnMoves = (BP << 7) & opponentPieces & ~rank1 & ~fileH;
+        //first, look at right-captures
+        uint64_t pawnMoves = (boardGeneration.BP << 7) & boardGeneration.whitePieces() & ~rank1 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -590,7 +591,7 @@ public:
         }
 
         //now, left-captures
-        pawnMoves = (BP << 9) & opponentPieces & ~rank1 & ~fileA;
+        pawnMoves = (boardGeneration.BP << 9) & boardGeneration.whitePieces() & ~rank1 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -603,7 +604,7 @@ public:
         }
 
         //now, moving 1 forward
-        pawnMoves = (BP << 8) & emptySquares & ~rank1;
+        pawnMoves = (boardGeneration.BP << 8) & boardGeneration.empty() & ~rank1;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -616,7 +617,7 @@ public:
         }
 
         //now, moving 2 forward
-        pawnMoves = (BP << 16) & emptySquares & (emptySquares << 8) & rank5;
+        pawnMoves = (boardGeneration.BP << 16) & boardGeneration.empty() & (boardGeneration.empty() << 8) & rank5;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -629,52 +630,56 @@ public:
         }
 
         //now, promoting, capturing right
-        pawnMoves = (BP << 7) & occupiedSquares & opponentPieces & rank1 & ~fileH;
+        pawnMoves = (boardGeneration.BP << 7) & boardGeneration.occupied() & boardGeneration.whitePieces() & rank1 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
             {
                 if (((pawnMoves >> i) & 1) == 1)
                 {
-                    moveList += (to_string(i / 8 + 1) + to_string(i % 8) + "QP" + to_string(i / 8 + 1) + to_string(i % 8) + "RP" + to_string(i / 8 + 1) + to_string(i % 8) + "BP" + to_string(i / 8 + 1) + to_string(i % 8) + "NP");
+                    string movementString = to_string(i % 8 + 1) + to_string(i % 8);
+                    moveList += ( movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
 
         //now, promoting, capturing left
-        pawnMoves = (BP << 9) & occupiedSquares & opponentPieces & rank1 & ~fileA;
+        pawnMoves = (boardGeneration.BP << 9) & boardGeneration.occupied() & boardGeneration.whitePieces() & rank1 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
             {
                 if (((pawnMoves >> i) & 1) == 1)
                 {
-                    moveList += (to_string(i / 8 - 1) + to_string(i % 8) + "QP" + to_string(i / 8 - 1) + to_string(i % 8) + "RP" + to_string(i / 8 - 1) + to_string(i % 8) + "BP" + to_string(i / 8 - 1) + to_string(i % 8) + "NP");
+                    string movementString = to_string(i % 8 - 1) + to_string(i % 8);
+                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
 
         //now, promoting, moving 1 forward
-        pawnMoves = (BP << 8) & emptySquares & rank1;
+        pawnMoves = (boardGeneration.BP << 8) & boardGeneration.empty() & rank1;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
             {
                 if (((pawnMoves >> i) & 1) == 1)
                 {
-                    moveList += (to_string(i / 8) + to_string(i % 8) + "QP" + to_string(i / 8) + to_string(i % 8) + "RP" + to_string(i / 8) + to_string(i % 8) + "BP" + to_string(i / 8) + to_string(i % 8) + "NP");
+                    string movementString = to_string(i % 8) + to_string(i % 8);
+                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
 
-        possibility = (BP >> 1) & WP & rank4 & ~fileH & EP;
+        //En passant
+        possibility = (boardGeneration.BP >> 1) & boardGeneration.WP & rank4 & ~fileH & boardGeneration.EP;
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
             moveList += (to_string(index % 8 + 1) + to_string(index % 8) + "WE");
         }
 
-        possibility = (BP << 1) & WP & rank4 & ~fileA & EP;
+        possibility = (boardGeneration.BP << 1) & boardGeneration.WP & rank4 & ~fileA & boardGeneration.EP;
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);

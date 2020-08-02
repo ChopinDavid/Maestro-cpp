@@ -44,6 +44,10 @@ public:
     uint64_t occupied() {
         return whitePieces() + blackPieces();
     }
+
+    uint64_t empty() {
+        return ~(WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK );
+    }
     
 
     bool whiteToMove = true;

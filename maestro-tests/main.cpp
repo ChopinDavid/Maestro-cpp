@@ -95,8 +95,48 @@ TEST_CASE("covered diagonal and anti-diagonal squares works") {
     REQUIRE(moves.coveredDiagonalAndAntiDiagonalSquares(2) == 2560);
 }
 
-TEST_CASE("pawn move generation works") {
-    
+TEST_CASE("white pawn move generation works") {
+    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+    boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
+    Moves& moves = Moves::getInstance();
+    REQUIRE(moves.possibleWP() == "574760506151625263536454665660406141624263436444664656WE");
+
+    boardGeneration.importFEN("8/8/2p1p3/3P4/8/8/8/8 b - - 0 1");
+    REQUIRE(moves.possibleWP() == "332433223323");
+
+    boardGeneration.importFEN("rnbqkbnr/pp1ppppp/8/8/2pPP3/5P2/PPP3PP/RNBQKBNR b KQkq d3 0 3");
+    REQUIRE(moves.possibleWP() == "433344345545605061516252665667576040614166466747");
+
+    boardGeneration.importFEN("8/8/8/3PpP2/8/8/8/8 w - e6 0 1");
+    REQUIRE(moves.possibleWP() == "3323352534WE54WE");
+
+    boardGeneration.importFEN("1n1n4/2P5/8/8/8/8/8/8 b - - 0 1");
+    REQUIRE(moves.possibleWP() == "23QP23RP23BP23NP21QP21RP21BP21NP22QP22RP22BP22NP");
+
+    boardGeneration.importFEN("1n1n4/2P5/8/4pP2/8/8/8/8 w - e6 0 1");
+    REQUIRE(moves.possibleWP() == "352523QP23RP23BP23NP21QP21RP21BP21NP22QP22RP22BP22NP54WE");
+}
+
+TEST_CASE("black pawn move generation works") {
+    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+    boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
+    Moves& moves = Moves::getInstance();
+    REQUIRE(moves.possibleBP() == "112112221323142417272030364611311232133314341737");
+
+    boardGeneration.importFEN("8/8/8/3p4/2P1P3/8/8/8 w - - 0 1");
+    REQUIRE(moves.possibleBP() == "334233443343");
+
+    boardGeneration.importFEN("rnbqkbnr/pp1ppppp/8/8/2pPP3/5P2/PPP3PP/RNBQKBNR b KQkq d3 0 3");
+    REQUIRE(moves.possibleBP() == "10201121132314241525162617274252103011311333143415351636173723WE");
+
+    boardGeneration.importFEN("8/8/8/8/2pPp3/8/8/8 w - d3 0 1");
+    REQUIRE(moves.possibleBP() == "4252445443WE23WE");
+
+    boardGeneration.importFEN("8/8/8/8/8/8/2p5/1N1N4 b - - 0 1");
+    REQUIRE(moves.possibleBP() == "21QP21RP21BP21NP23QP23RP23BP23NP22QP22RP22BP22NP");
+
+    boardGeneration.importFEN("8/8/8/8/5pP1/8/2p5/1N1N4 b - g3 0 1");
+    REQUIRE(moves.possibleBP() == "455521QP21RP21BP21NP23QP23RP23BP23NP22QP22RP22BP22NP56WE");
 }
 
 TEST_CASE("knight move generation works") {
