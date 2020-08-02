@@ -1,10 +1,11 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include "../maestro/boardGeneration.h"
 #include "../maestro/moves.h"
 
-TEST_CASE("importFEN works") {
-    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+TEST_CASE("importFEN works")
+{
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
 
     REQUIRE(boardGeneration.WP == 26880860812738560);
@@ -26,8 +27,9 @@ TEST_CASE("importFEN works") {
     REQUIRE(boardGeneration.CBQ == false);
 }
 
-TEST_CASE("horizontal and vertical move generation works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("horizontal and vertical move generation works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 8796109801472;
     moves.opponentSquares = 16777216;
@@ -44,19 +46,20 @@ TEST_CASE("horizontal and vertical move generation works") {
     moves.occupiedSquares = 134744064;
     moves.opponentSquares = 134744064;
     REQUIRE(moves.horizontalAndVerticalMoves(35) == 578722409201270784);
-
 }
 
-TEST_CASE("covered horizontal and vertical squares works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("covered horizontal and vertical squares works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 2260827969683456;
     moves.opponentSquares = 2260621676511232;
     REQUIRE(moves.coveredHorizontalAndVericalSquares(35) == 8882126585856);
 }
 
-TEST_CASE("diagonal and anti-diagonal move generation works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("diagonal and anti-diagonal move generation works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 288230376153808896;
     moves.opponentSquares = 288230376151711744;
@@ -83,8 +86,9 @@ TEST_CASE("diagonal and anti-diagonal move generation works") {
     REQUIRE(moves.diagonalAndAntiDiagonalMoves(49) == 360293467747778560);
 }
 
-TEST_CASE("covered diagonal and anti-diagonal squares works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("covered diagonal and anti-diagonal squares works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 9592139778490368;
     moves.opponentSquares = 9592139440717824;
@@ -95,10 +99,12 @@ TEST_CASE("covered diagonal and anti-diagonal squares works") {
     REQUIRE(moves.coveredDiagonalAndAntiDiagonalSquares(2) == 2560);
 }
 
-TEST_CASE("white pawn move generation works") {
-    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+TEST_CASE("white pawn move generation works")
+{
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
-    Moves& moves = Moves::getInstance();
     REQUIRE(moves.possibleWP() == "574760506151625263536454665660406141624263436444664656WE");
 
     boardGeneration.importFEN("8/8/2p1p3/3P4/8/8/8/8 b - - 0 1");
@@ -117,10 +123,12 @@ TEST_CASE("white pawn move generation works") {
     REQUIRE(moves.possibleWP() == "352523QP23RP23BP23NP21QP21RP21BP21NP22QP22RP22BP22NP54WE");
 }
 
-TEST_CASE("black pawn move generation works") {
-    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+TEST_CASE("black pawn move generation works")
+{
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
-    Moves& moves = Moves::getInstance();
     REQUIRE(moves.possibleBP() == "112112221323142417272030364611311232133314341737");
 
     boardGeneration.importFEN("8/8/8/3p4/2P1P3/8/8/8 w - - 0 1");
@@ -139,48 +147,67 @@ TEST_CASE("black pawn move generation works") {
     REQUIRE(moves.possibleBP() == "455521QP21RP21BP21NP23QP23RP23BP23NP22QP22RP22BP22NP56WE");
 }
 
-TEST_CASE("knight move generation works") {
-    
+TEST_CASE("knight move generation works")
+{
 }
 
-TEST_CASE("bishop move generation works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("bishop move generation works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 17592521588736;
     moves.opponentSquares = 17592253153280;
     REQUIRE(moves.possibleB(35) == "35263542354435493556");
 }
 
-TEST_CASE("rook move generation works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("rook move generation works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 68853694464;
     moves.opponentSquares = 68853694464;
     REQUIRE(moves.possibleR(35) == "35273532353335343536354335513559");
 }
 
-TEST_CASE("queen move generation works") {
-    Moves& moves = Moves::getInstance();
+TEST_CASE("queen move generation works")
+{
+    Moves &moves = Moves::getInstance();
 
     moves.occupiedSquares = 68853694464;
     moves.opponentSquares = 68853694464;
     REQUIRE(moves.possibleQ(35) == "350735083514351735213526352735283532353335343536354235433544354935513553355635593562");
 }
 
-TEST_CASE("king move generation works") {
-    
+TEST_CASE("king move generation works")
+{
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
+    boardGeneration.importFEN("3kr3/8/8/8/3P4/3K4/8/8 w - - 0 1");
+    REQUIRE(moves.possibleK(boardGeneration.WK) == "5342535253625363");
+
+    boardGeneration.importFEN("3k4/8/8/5p2/4p3/3K4/8/8 w - - 0 1");
+    REQUIRE(moves.possibleK(boardGeneration.WK) == "5342534353525354536253635364");
+
+    boardGeneration.importFEN("8/8/8/3k4/3p4/8/8/2RK4 b - - 0 1");
+    REQUIRE(moves.possibleK(boardGeneration.BK) == "3323332433343344");
+
+    boardGeneration.importFEN("8/8/8/3k4/2P5/1P6/8/3K4 b - - 0 1");
+    REQUIRE(moves.possibleK(boardGeneration.BK) == "3322332333243332333433433344");
 }
 
-TEST_CASE("unsafe for white calculation works") {
-    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+TEST_CASE("unsafe for white calculation works")
+{
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
-    Moves& moves = Moves::getInstance();
+    Moves &moves = Moves::getInstance();
     REQUIRE(moves.unsafeForWhite() == 688587275901);
 }
 
-TEST_CASE("unsafe for black calculation works") {
-    BoardGeneration& boardGeneration = BoardGeneration::getInstance();
+TEST_CASE("unsafe for black calculation works")
+{
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
-    Moves& moves = Moves::getInstance();
+    Moves &moves = Moves::getInstance();
     REQUIRE(moves.unsafeForBlack() == 13726900470852616192U);
 }

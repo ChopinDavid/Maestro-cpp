@@ -192,7 +192,7 @@ public:
             else
             {
                 coveredSquares |= testingSquare;
-                testingSquare >>= 8;
+                testingSquare <<= 1;
             }
         }
 
@@ -221,7 +221,8 @@ public:
             if ((testingSquare & fileH) != 0)
             {
                 testingSquare = 0;
-            } else if (((testingSquare & maskedBlockers) != 0))
+            }
+            else if (((testingSquare & maskedBlockers) != 0))
             {
                 coveredSquares |= testingSquare;
                 testingSquare = 0;
@@ -638,7 +639,7 @@ public:
                 if (((pawnMoves >> i) & 1) == 1)
                 {
                     string movementString = to_string(i % 8 + 1) + to_string(i % 8);
-                    moveList += ( movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
+                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
                 }
             }
         }
@@ -752,7 +753,7 @@ public:
         return convertStartAndPossibleDestinationsToMovesString(Q, possibleDestinations);
     }
 
-    string possibleK(uint64_t occupied, uint64_t K)
+    string possibleK(uint64_t K)
     {
         string movesList = "";
         uint64_t possibility;
@@ -767,17 +768,17 @@ public:
         }
         if (iLocation % 8 < 4)
         {
-            possibility &= ~filesGH & notMyPieces;
+            possibility &= ~filesGH & ~(boardGeneration.whitePieces());
         }
         else
         {
-            possibility &= ~filesAB & notMyPieces;
+            possibility &= ~filesAB & ~(boardGeneration.whitePieces());
         }
 
         if (boardGeneration.whiteToMove)
         {
             uint64_t safeSquares = ~unsafeForWhite();
-            uint64_t nonWhiteOccupiedSquares = ~(boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ);
+            uint64_t nonWhiteOccupiedSquares = ~(boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ);
             possibility = possibility & safeSquares & nonWhiteOccupiedSquares;
         }
         else
@@ -787,14 +788,15 @@ public:
             possibility = possibility & safeSquares & nonBlackOccupiedSquares;
         }
 
-        uint64_t j = possibility & ~(possibility & -1);
+        string binaryPossibilities = convertBitboardToStringRep(possibility);
 
-        while (j != 0)
+        for (int i = 0; i < strlen(binaryPossibilities.c_str()); i++)
         {
-            int index = countTrailingZeros(j);
-            movesList += (to_string(iLocation / 8) + to_string(iLocation % 8) + to_string(index / 8) + to_string(index % 8));
-            possibility &= ~j;
-            j = possibility & ~(possibility & -1);
+            char character = binaryPossibilities[i];
+            if (character == '1')
+            {
+                movesList += (to_string(convertUint64ToIndex(K) / 8) + to_string(convertUint64ToIndex(K) % 8) + to_string(i / 8) + to_string(i % 8));
+            }
         }
 
         return movesList;
@@ -1127,6 +1129,11 @@ public:
 
         reverse(bitBoardString.begin(), bitBoardString.end());
         return bitBoardString;
+    }
+
+    int convertUint64ToIndex(uint64_t n)
+    {
+        return log(n) / log(2);
     }
 };
 
