@@ -690,43 +690,43 @@ public:
         return moveList;
     }
 
-    string possibleN(uint64_t occupiedSquares, uint64_t N)
+    string possibleN(uint64_t N)
     {
-        uint64_t mutableN = N;
         string movesList = "";
-        uint64_t i = mutableN & ~(mutableN - 1);
-        uint64_t possibility;
+        string binaryN = convertBitboardToStringRep(N);
 
-        while (i != 0)
+        for (int i = 0; i < strlen(binaryN.c_str()); i++)
         {
-            int iLocation = countTrailingZeros(i);
-            if (iLocation > 18)
+            char character = binaryN[i];
+            if (character == '1')
             {
-                possibility = knightSpan << (iLocation - 18);
+                uint64_t thisKnightsPossibilities = 0;
+                uint64_t span;
+                if (i < 18) {
+                    span = knightSpan >> 18 - i;
+                } else {
+                    span = knightSpan << i - 18;
+                }
+                if (i % 8 < 5)
+                {
+                    thisKnightsPossibilities |= (span & ~(filesGH));
+                }
+                else
+                {
+                    thisKnightsPossibilities |= (span & ~(filesAB));
+                }
+                string thisKnightsPossibilitiesBinary = convertBitboardToStringRep(thisKnightsPossibilities);
+                for (int j = 0; j < strlen(binaryN.c_str()); j++)
+                {
+                    char character = thisKnightsPossibilitiesBinary[j];
+                    if (character == '1')
+                    {
+                        movesList += (to_string(i / 8) + to_string(i % 8) + to_string(j / 8) + to_string(j % 8));
+                    }
+                }
             }
-            else
-            {
-                possibility = knightSpan >> (18 - iLocation);
-            }
-            if (iLocation % 8 < 4)
-            {
-                possibility &= ~filesGH & notMyPieces;
-            }
-            else
-            {
-                possibility &= ~filesAB & notMyPieces;
-            }
-            uint64_t j = possibility & ~(possibility & -1);
-            while (j != 0)
-            {
-                int index = countTrailingZeros(j);
-                movesList += (to_string(iLocation / 8) + to_string(iLocation % 8) + to_string(index / 8) + to_string(index % 8));
-                possibility &= ~j;
-                j = possibility & ~(possibility & -1);
-            }
-            mutableN &= ~i;
-            i = mutableN & ~(mutableN & -1);
         }
+
         return movesList;
     }
 

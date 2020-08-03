@@ -149,6 +149,17 @@ TEST_CASE("black pawn move generation works")
 
 TEST_CASE("knight move generation works")
 {
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
+    boardGeneration.importFEN("k7/8/8/8/8/5N2/8/K6N w - - 0 1");
+    REQUIRE(moves.possibleN(boardGeneration.WN) == "5534553655435547556355675574557677567765");
+
+    boardGeneration.importFEN("N6K/8/2N5/8/8/8/8/7k w - - 0 1");
+    REQUIRE(moves.possibleN(boardGeneration.WN) == "0012002122012203221022142230223422412243");
+
+    boardGeneration.importFEN("N6K/8/8/8/8/8/8/N6k w - - 0 1");
+    REQUIRE(moves.possibleN(boardGeneration.WN) == "0012002170517062");
 }
 
 TEST_CASE("bishop move generation works")
