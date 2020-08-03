@@ -39,19 +39,20 @@ public:
 
     BoardGeneration &boardGeneration = BoardGeneration::getInstance();
 
-    uint64_t notMyPieces;
-    uint64_t myPieces;
-    uint64_t occupiedSquares;
-    uint64_t opponentSquares;
-
     uint64_t horizontalAndVerticalMoves(int s)
     {
-        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t myPieces;
+        if (boardGeneration.whiteToMove) {
+            myPieces = boardGeneration.whitePieces();
+        } else {
+            myPieces = boardGeneration.blackPieces();
+        }
+        
         uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
         uint64_t fileMask = fileMasks8[s % 8];
         uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
-        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
         uint64_t maskedBlockers = rookMask & blockersMask;
         uint64_t possibleMoves = 0;
         Direction direction = North;
@@ -145,12 +146,17 @@ public:
 
     uint64_t coveredHorizontalAndVericalSquares(int s)
     {
-        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t myPieces;
+        if (boardGeneration.whiteToMove) {
+            myPieces = boardGeneration.whitePieces();
+        } else {
+            myPieces = boardGeneration.blackPieces();
+        }
         uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
         uint64_t fileMask = fileMasks8[s % 8];
         uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
-        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
         uint64_t maskedBlockers = rookMask & blockersMask;
         uint64_t coveredSquares = 0;
         Direction direction = North;
@@ -239,12 +245,17 @@ public:
 
     uint64_t diagonalAndAntiDiagonalMoves(int s)
     {
-        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t myPieces;
+        if (boardGeneration.whiteToMove) {
+            myPieces = boardGeneration.whitePieces();
+        } else {
+            myPieces = boardGeneration.blackPieces();
+        }
         uint64_t sBinary = 1ULL << s;
         uint64_t diagonalMask = diagonalMasks8[s % 8 + s / 8];
         uint64_t antiDiagonalMask = antiDiagonalMasks8[(7 - s % 8) + s / 8];
         uint64_t bishopMask = (diagonalMask | antiDiagonalMask) & ~(sBinary);
-        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
         uint64_t maskedBlockers = bishopMask & blockersMask;
         uint64_t possibleMoves = 0;
         Direction direction = Northeast;
@@ -338,12 +349,17 @@ public:
 
     uint64_t coveredDiagonalAndAntiDiagonalSquares(int s)
     {
-        myPieces = occupiedSquares & ~opponentSquares;
+        uint64_t myPieces;
+        if (boardGeneration.whiteToMove) {
+            myPieces = boardGeneration.whitePieces();
+        } else {
+            myPieces = boardGeneration.blackPieces();
+        }
         uint64_t sBinary = 1ULL << s;
         uint64_t diagonalMask = diagonalMasks8[s % 8 + s / 8];
         uint64_t antiDiagonalMask = antiDiagonalMasks8[(7 - s % 8) + s / 8];
         uint64_t bishopMask = (diagonalMask | antiDiagonalMask) & ~(sBinary);
-        uint64_t blockersMask = occupiedSquares & ~(sBinary);
+        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
         uint64_t maskedBlockers = bishopMask & blockersMask;
         uint64_t coveredSquares = 0;
         Direction direction = Northeast;
@@ -804,6 +820,7 @@ public:
 
     string possibleCW(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CWK, bool CWQ)
     {
+        uint64_t occupiedSquares = boardGeneration.occupied();
         string movesList = "";
         uint64_t unsafe = unsafeForWhite();
 
@@ -839,6 +856,8 @@ public:
 
     string possibleCB(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CBK, bool CBQ)
     {
+        
+        uint64_t occupiedSquares = boardGeneration.occupied();
         string movesList = "";
         uint64_t unsafe = unsafeForBlack();
 
@@ -872,8 +891,8 @@ public:
 
     uint64_t unsafeForWhite()
     {
-        occupiedSquares = boardGeneration.occupied();
-        opponentSquares = boardGeneration.whitePieces();
+        uint64_t occupiedSquares = boardGeneration.occupied();
+        uint64_t opponentSquares = boardGeneration.whitePieces();
         uint64_t unsafe = 0;
         occupiedSquares = boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ | boardGeneration.WK | boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ | boardGeneration.BK;
         //pawn
@@ -961,8 +980,9 @@ public:
 
     uint64_t unsafeForBlack()
     {
-        occupiedSquares = boardGeneration.occupied();
-        opponentSquares = boardGeneration.blackPieces();
+        
+        uint64_t occupiedSquares = boardGeneration.occupied();
+        uint64_t opponentSquares = boardGeneration.blackPieces();
         uint64_t unsafe = 0;
         occupiedSquares = boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ | boardGeneration.WK | boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ | boardGeneration.BK;
         //pawn
