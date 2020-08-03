@@ -3,6 +3,7 @@
 
 #include "boardGeneration.h"
 #include "bitboard.h"
+#include "direction.h"
 #include <stdint.h>
 #include <iostream>
 #include <string>
@@ -12,18 +13,6 @@
 #include <iomanip>
 #include <cstring>
 using namespace std;
-
-enum Direction
-{
-    North,
-    Northeast,
-    East,
-    Southeast,
-    South,
-    Southwest,
-    West,
-    Northwest
-};
 
 class Moves
 {
