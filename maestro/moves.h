@@ -695,8 +695,14 @@ public:
         return moveList;
     }
 
-    string possibleN(uint64_t N)
+    string possibleN()
     {
+        uint64_t N;
+        if (boardGeneration.whiteToMove) {
+            N = boardGeneration.WN;
+        } else {
+            N = boardGeneration.BN;
+        }
         string movesList = "";
         string binaryN = convertBitboardToStringRep(N);
 
