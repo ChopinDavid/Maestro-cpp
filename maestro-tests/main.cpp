@@ -88,6 +88,9 @@ TEST_CASE("covered diagonal and anti-diagonal squares works")
 
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
     REQUIRE(moves.coveredDiagonalAndAntiDiagonalSquares(2) == 2560);
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(moves.coveredDiagonalAndAntiDiagonalSquares(3) == 2102272);
 }
 
 TEST_CASE("white pawn move generation works")
@@ -205,6 +208,9 @@ TEST_CASE("unsafe for white calculation works")
 
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
     REQUIRE(moves.unsafeForWhite() == 688587275901);
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(moves.unsafeForWhite() == 1626148437886);
 }
 
 TEST_CASE("unsafe for black calculation works")
@@ -214,4 +220,27 @@ TEST_CASE("unsafe for black calculation works")
 
     boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
     REQUIRE(moves.unsafeForBlack() == 13726900470852616192U);
+}
+
+TEST_CASE("white castling calculation works") {
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(moves.possibleCW() == "7476");
+
+    boardGeneration.importFEN("r1b2rk1/ppppnpp1/5q1p/2b1p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ - 2 9");
+    REQUIRE(moves.possibleCW() == "74767472");
+
+    boardGeneration.importFEN("r1b2rk1/pp1pnpp1/2p2q1p/2b1p3/2B1P3/2NP1N2/PPPQKPPP/R6R w - - 0 10");
+    REQUIRE(moves.possibleCW() == "");
+
+    boardGeneration.importFEN("r1b2rk1/ppppnp2/6p1/2b1N1qp/2B1P3/2NP2P1/PPP1QP1P/R3K2R w KQ - 0 12");
+    REQUIRE(moves.possibleCW() == "7476");
+
+    boardGeneration.importFEN("r1b2rk1/ppppnp2/5qp1/2b1N2p/2B1P3/2NP1PP1/PPP1Q2P/R3K2R w KQ - 0 13");
+    REQUIRE(moves.possibleCW() == "7472");
+
+    boardGeneration.importFEN("r1b2rk1/ppppnp2/6pq/2b1N2p/2B1P3/2NP1PP1/PPP1Q2P/R3K2R w KQ - 1 13");
+    REQUIRE(moves.possibleCW() == "");
 }

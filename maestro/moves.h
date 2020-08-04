@@ -31,12 +31,15 @@ public:
     uint64_t horizontalAndVerticalMoves(int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove) {
+        if (boardGeneration.whiteToMove)
+        {
             myPieces = boardGeneration.whitePieces();
-        } else {
+        }
+        else
+        {
             myPieces = boardGeneration.blackPieces();
         }
-        
+
         uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
         uint64_t fileMask = fileMasks8[s % 8];
@@ -136,9 +139,12 @@ public:
     uint64_t coveredHorizontalAndVericalSquares(int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove) {
+        if (boardGeneration.whiteToMove)
+        {
             myPieces = boardGeneration.whitePieces();
-        } else {
+        }
+        else
+        {
             myPieces = boardGeneration.blackPieces();
         }
         uint64_t sBinary = 1ULL << s;
@@ -235,9 +241,12 @@ public:
     uint64_t diagonalAndAntiDiagonalMoves(int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove) {
+        if (boardGeneration.whiteToMove)
+        {
             myPieces = boardGeneration.whitePieces();
-        } else {
+        }
+        else
+        {
             myPieces = boardGeneration.blackPieces();
         }
         uint64_t sBinary = 1ULL << s;
@@ -339,9 +348,12 @@ public:
     uint64_t coveredDiagonalAndAntiDiagonalSquares(int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove) {
+        if (boardGeneration.whiteToMove)
+        {
             myPieces = boardGeneration.whitePieces();
-        } else {
+        }
+        else
+        {
             myPieces = boardGeneration.blackPieces();
         }
         uint64_t sBinary = 1ULL << s;
@@ -698,9 +710,12 @@ public:
     string possibleN()
     {
         uint64_t N;
-        if (boardGeneration.whiteToMove) {
+        if (boardGeneration.whiteToMove)
+        {
             N = boardGeneration.WN;
-        } else {
+        }
+        else
+        {
             N = boardGeneration.BN;
         }
         string movesList = "";
@@ -713,9 +728,12 @@ public:
             {
                 uint64_t thisKnightsPossibilities = 0;
                 uint64_t span;
-                if (i < 18) {
+                if (i < 18)
+                {
                     span = knightSpan >> 18 - i;
-                } else {
+                }
+                else
+                {
                     span = knightSpan << i - 18;
                 }
                 if (i % 8 < 5)
@@ -882,16 +900,16 @@ public:
         return movesList;
     }
 
-    string possibleCW(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CWK, bool CWQ)
+    string possibleCW()
     {
         uint64_t occupiedSquares = boardGeneration.occupied();
         string movesList = "";
         uint64_t unsafe = unsafeForWhite();
 
-        bool inCheck = unsafe & (WK == 0);
-        if (inCheck)
+        bool inCheck = (unsafe & boardGeneration.WK) != 0;
+        if (!inCheck)
         {
-            if (CWK && (((1ULL << castleRooks[0]) & WR) != 0))
+            if (boardGeneration.CWK && (((1ULL << castleRooks[0]) & boardGeneration.WR) != 0))
             {
                 uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
                 uint64_t kingSideBishopAndKnight = ((1ULL << 61) | (1ULL << 62));
@@ -902,7 +920,7 @@ public:
                 }
             }
 
-            if (CWQ && (((1ULL << castleRooks[1]) & WR) != 0))
+            if (boardGeneration.CWQ && (((1ULL << castleRooks[1]) & boardGeneration.WR) != 0))
             {
                 uint64_t knight = (1ULL << 57);
                 uint64_t bishop = (1ULL << 58);
@@ -920,7 +938,7 @@ public:
 
     string possibleCB(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CBK, bool CBQ)
     {
-        
+
         uint64_t occupiedSquares = boardGeneration.occupied();
         string movesList = "";
         uint64_t unsafe = unsafeForBlack();
@@ -958,7 +976,6 @@ public:
         uint64_t occupiedSquares = boardGeneration.occupied();
         uint64_t opponentSquares = boardGeneration.whitePieces();
         uint64_t unsafe = 0;
-        occupiedSquares = boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ | boardGeneration.WK | boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ | boardGeneration.BK;
         //pawn
         uint64_t rightCaptures = ((boardGeneration.BP << 7) & ~fileH);
         uint64_t leftCaptures = ((boardGeneration.BP << 9) & ~fileA);
@@ -967,29 +984,33 @@ public:
         uint64_t possibility;
         //knight
         uint64_t knightCaptures = 0;
-        uint64_t i = boardGeneration.BN & ~(boardGeneration.BN - 1);
-        while (i != 0)
+        string binaryN = convertBitboardToStringRep(boardGeneration.BN);
+
+        for (int i = 0; i < strlen(binaryN.c_str()); i++)
         {
-            int iLocation = countTrailingZeros(i);
-            if (iLocation > 18)
+            char character = binaryN[i];
+            if (character == '1')
             {
-                knightCaptures = knightSpan << (iLocation - 18);
+                uint64_t thisKnightsPossibilities = 0;
+                uint64_t span;
+                if (i < 18)
+                {
+                    span = knightSpan >> 18 - i;
+                }
+                else
+                {
+                    span = knightSpan << i - 18;
+                }
+                if (i % 8 < 5)
+                {
+                    thisKnightsPossibilities |= (span & ~(filesGH));
+                }
+                else
+                {
+                    thisKnightsPossibilities |= (span & ~(filesAB));
+                }
+                unsafe |= thisKnightsPossibilities;
             }
-            else
-            {
-                knightCaptures = knightSpan >> (18 - iLocation);
-            }
-            if (iLocation % 8 < 4)
-            {
-                knightCaptures &= ~filesGH;
-            }
-            else
-            {
-                knightCaptures &= ~filesAB;
-            }
-            unsafe |= knightCaptures;
-            boardGeneration.BN &= ~i;
-            i = boardGeneration.BN & ~(boardGeneration.BN - 1);
         }
         //bishop/queen
         uint64_t bishopQueenCaptures = 0;
@@ -1044,7 +1065,7 @@ public:
 
     uint64_t unsafeForBlack()
     {
-        
+
         uint64_t occupiedSquares = boardGeneration.occupied();
         uint64_t opponentSquares = boardGeneration.blackPieces();
         uint64_t unsafe = 0;
