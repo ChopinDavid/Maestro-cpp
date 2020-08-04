@@ -159,7 +159,7 @@ TEST_CASE("bishop move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("8/8/8/2p1P3/3B4/4p3/8/8 w - - 0 1");
-    REQUIRE(moves.possibleB(35) == "35263542354435493556");
+    REQUIRE(moves.possibleB() == "35263542354435493556");
 }
 
 TEST_CASE("rook move generation works")
@@ -168,7 +168,7 @@ TEST_CASE("rook move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("8/8/8/3p4/3Rp3/8/8/8 w - - 0 1");
-    REQUIRE(moves.possibleR(35) == "35273532353335343536354335513559");
+    REQUIRE(moves.possibleR() == "35273532353335343536354335513559");
 }
 
 TEST_CASE("queen move generation works")
@@ -177,7 +177,7 @@ TEST_CASE("queen move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("8/8/8/3p4/3Qp3/8/8/8 w - - 0 1");
-    REQUIRE(moves.possibleQ(35) == "350735083514351735213526352735283532353335343536354235433544354935513553355635593562");
+    REQUIRE(moves.possibleQ() == "350735083514351735213526352735283532353335343536354235433544354935513553355635593562");
 }
 
 TEST_CASE("king move generation works")
@@ -186,16 +186,16 @@ TEST_CASE("king move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("3kr3/8/8/8/3P4/3K4/8/8 w - - 0 1");
-    REQUIRE(moves.possibleK(boardGeneration.WK) == "5342535253625363");
+    REQUIRE(moves.possibleK() == "5342535253625363");
 
     boardGeneration.importFEN("3k4/8/8/5p2/4p3/3K4/8/8 w - - 0 1");
-    REQUIRE(moves.possibleK(boardGeneration.WK) == "5342534353525354536253635364");
+    REQUIRE(moves.possibleK() == "5342534353525354536253635364");
 
     boardGeneration.importFEN("8/8/8/3k4/3p4/8/8/2RK4 b - - 0 1");
-    REQUIRE(moves.possibleK(boardGeneration.BK) == "3323332433343344");
+    REQUIRE(moves.possibleK() == "3323332433343344");
 
     boardGeneration.importFEN("8/8/8/3k4/2P5/1P6/8/3K4 b - - 0 1");
-    REQUIRE(moves.possibleK(boardGeneration.BK) == "3322332333243332333433433344");
+    REQUIRE(moves.possibleK() == "3322332333243332333433433344");
 }
 
 TEST_CASE("unsafe for white calculation works")

@@ -741,31 +741,100 @@ public:
         return movesList;
     }
 
-    string possibleB(uint64_t B)
+    string possibleB()
     {
-        uint64_t possibleDestinations = diagonalAndAntiDiagonalMoves(B);
-        string pos = convertStartAndPossibleDestinationsToMovesString(B, possibleDestinations);
-        return pos;
+        uint64_t B;
+        if (boardGeneration.whiteToMove)
+        {
+            B = boardGeneration.WB;
+        }
+        else
+        {
+            B = boardGeneration.BB;
+        }
+
+        string movesList = "";
+        string binaryB = convertBitboardToStringRep(B);
+
+        for (int i = 0; i < strlen(binaryB.c_str()); i++)
+        {
+            char character = binaryB[i];
+            if (character == '1')
+            {
+                uint64_t possibleDestinations = diagonalAndAntiDiagonalMoves(i);
+                movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
+            }
+        }
+        return movesList;
     }
 
-    string possibleR(uint64_t R)
+    string possibleR()
     {
-        uint64_t possibleDestinations = horizontalAndVerticalMoves(R);
-        return convertStartAndPossibleDestinationsToMovesString(R, possibleDestinations);
-        ;
+        uint64_t R;
+        if (boardGeneration.whiteToMove)
+        {
+            R = boardGeneration.WR;
+        }
+        else
+        {
+            R = boardGeneration.BR;
+        }
+
+        string movesList = "";
+        string binaryR = convertBitboardToStringRep(R);
+
+        for (int i = 0; i < strlen(binaryR.c_str()); i++)
+        {
+            char character = binaryR[i];
+            if (character == '1')
+            {
+                uint64_t possibleDestinations = horizontalAndVerticalMoves(i);
+                movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
+            }
+        }
+        return movesList;
     }
 
-    string possibleQ(int Q)
+    string possibleQ()
     {
-        uint64_t hv = horizontalAndVerticalMoves(Q);
-        uint64_t da = diagonalAndAntiDiagonalMoves(Q);
-        uint64_t possibleDestinations = hv | da;
+        uint64_t Q;
+        if (boardGeneration.whiteToMove)
+        {
+            Q = boardGeneration.WQ;
+        }
+        else
+        {
+            Q = boardGeneration.BQ;
+        }
 
-        return convertStartAndPossibleDestinationsToMovesString(Q, possibleDestinations);
+        string movesList = "";
+        string binaryQ = convertBitboardToStringRep(Q);
+
+        for (int i = 0; i < strlen(binaryQ.c_str()); i++)
+        {
+            char character = binaryQ[i];
+            if (character == '1')
+            {
+                uint64_t hv = horizontalAndVerticalMoves(i);
+                uint64_t da = diagonalAndAntiDiagonalMoves(i);
+                uint64_t possibleDestinations = hv | da;
+                movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
+            }
+        }
+        return movesList;
     }
 
-    string possibleK(uint64_t K)
+    string possibleK()
     {
+        uint64_t K;
+        if (boardGeneration.whiteToMove)
+        {
+            K = boardGeneration.WK;
+        }
+        else
+        {
+            K = boardGeneration.BK;
+        }
         string movesList = "";
         uint64_t possibility;
         int iLocation = countTrailingZeros(K);
