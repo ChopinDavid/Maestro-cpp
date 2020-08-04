@@ -3,6 +3,8 @@
 #include "../maestro/boardGeneration.h"
 #include "../maestro/moves.h"
 
+
+//Move generation tests
 TEST_CASE("importFEN works")
 {
     BoardGeneration &boardGeneration = BoardGeneration::getInstance();
@@ -52,6 +54,9 @@ TEST_CASE("covered horizontal and vertical squares works")
 
     boardGeneration.importFEN("8/8/3P4/3P4/1ppRPP2/3p4/3p4/8 w - - 0 1");
     REQUIRE(moves.coveredHorizontalAndVericalSquares(35) == 8882126585856);
+
+    boardGeneration.importFEN("rnbqk2r/ppppppbp/5np1/8/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 3 4");
+    REQUIRE(moves.coveredHorizontalAndVericalSquares(63) == 6953557824660045824);
 }
 
 TEST_CASE("diagonal and anti-diagonal move generation works")
@@ -243,4 +248,30 @@ TEST_CASE("white castling calculation works") {
 
     boardGeneration.importFEN("r1b2rk1/ppppnp2/6pq/2b1N2p/2B1P3/2NP1PP1/PPP1Q2P/R3K2R w KQ - 1 13");
     REQUIRE(moves.possibleCW() == "");
+}
+
+TEST_CASE("black castling calculation works") {
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
+    boardGeneration.importFEN("rnbqk2r/ppppppbp/5np1/8/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 3 4");
+    REQUIRE(moves.possibleCB() == "0406");
+
+    boardGeneration.importFEN("r3kb1r/pppqpp1p/2np1np1/3P1b2/2P5/2N1PN2/PP1QBPPP/R1B2RK1 b kq - 4 9");
+    REQUIRE(moves.possibleCB() == "0402");
+
+    boardGeneration.importFEN("r3k2r/pppqppbp/2np1np1/3P1b2/2P5/2NQPN2/PP2BPPP/R1B2RK1 b kq - 6 10");
+    REQUIRE(moves.possibleCB() == "04060402");
+
+    boardGeneration.importFEN("r3k2r/p1pqppbp/Qpnp1np1/2PP4/6b1/2N1PN2/PP2BPPP/R1B2RK1 b kq - 2 12");
+    REQUIRE(moves.possibleCB() == "0406");
+
+    boardGeneration.importFEN("r3k2r/p1pqpp1p/1pnp1bpQ/3Pnb2/2P5/1PN1PN2/P3BPPP/R1B2RK1 b kq - 3 14");
+    REQUIRE(moves.possibleCB() == "0402");
+
+    boardGeneration.importFEN("r3k2r/N1p1pp1p/1pnpqbpQ/3P1b2/2P5/1P1nPN2/P3BPPP/R1B2RK1 b kq - 0 16");
+    REQUIRE(moves.possibleCB() == "");
+
+    boardGeneration.importFEN("r6r/pppkppbp/2np1np1/1QPPqb2/8/1PN1PN2/P3BPPP/R1B2RK1 b - - 0 13");
+    REQUIRE(moves.possibleCB() == "");
 }

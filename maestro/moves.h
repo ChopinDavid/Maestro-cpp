@@ -179,7 +179,8 @@ public:
 
         while (direction == East)
         {
-            if ((testingSquare & fileA) != 0)
+
+            if ((testingSquare & fileA) != 0 || testingSquare == 0)
             {
                 testingSquare = sBinary << 8;
                 direction = South;
@@ -936,17 +937,16 @@ public:
         return movesList;
     }
 
-    string possibleCB(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, bool CBK, bool CBQ)
+    string possibleCB()
     {
-
         uint64_t occupiedSquares = boardGeneration.occupied();
         string movesList = "";
         uint64_t unsafe = unsafeForBlack();
 
-        bool inCheck = unsafe & (BK == 0);
-        if (inCheck)
+        bool inCheck = (unsafe & boardGeneration.BK) != 0;
+        if (!inCheck)
         {
-            if (CBK && (((1ULL << castleRooks[2]) & BR) != 0))
+            if (boardGeneration.CBK && (((1ULL << castleRooks[2]) & boardGeneration.BR) != 0))
             {
                 uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
                 uint64_t kingSideBishopAndKnight = ((1ULL << 5) | (1ULL << 6));
@@ -956,7 +956,7 @@ public:
                     movesList += "0406";
                 }
             }
-            if (CBQ && (((1ULL << castleRooks[3]) & BR) != 0))
+            if (boardGeneration.CBQ && (((1ULL << castleRooks[3]) & boardGeneration.BR) != 0))
             {
                 uint16_t knight = (1ULL << 1);
                 uint64_t bishop = (1ULL << 2);
@@ -1065,11 +1065,9 @@ public:
 
     uint64_t unsafeForBlack()
     {
-
         uint64_t occupiedSquares = boardGeneration.occupied();
         uint64_t opponentSquares = boardGeneration.blackPieces();
         uint64_t unsafe = 0;
-        occupiedSquares = boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ | boardGeneration.WK | boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ | boardGeneration.BK;
         //pawn
         uint64_t rightCaptures = ((boardGeneration.WP >> 7) & ~fileA);
         uint64_t leftCaptures = ((boardGeneration.WP >> 9) & ~fileH);
@@ -1078,31 +1076,34 @@ public:
         uint64_t possibility;
         //knight
         uint64_t knightCaptures = 0;
-        uint64_t i = boardGeneration.WN & ~(boardGeneration.WN - 1);
-        while (i != 0)
-        {
-            int iLocation = countTrailingZeros(i);
-            if (iLocation > 18)
-            {
-                knightCaptures = knightSpan << (iLocation - 18);
-            }
-            else
-            {
-                knightCaptures = knightSpan >> (18 - iLocation);
-            }
-            if (iLocation % 8 < 4)
-            {
-                knightCaptures &= ~filesGH;
-            }
-            else
-            {
-                knightCaptures &= ~filesAB;
-            }
-            unsafe |= knightCaptures;
-            boardGeneration.WN &= ~i;
-            i = boardGeneration.WN & ~(boardGeneration.WN - 1);
-        }
+        string binaryN = convertBitboardToStringRep(boardGeneration.WN);
 
+        for (int i = 0; i < strlen(binaryN.c_str()); i++)
+        {
+            char character = binaryN[i];
+            if (character == '1')
+            {
+                uint64_t thisKnightsPossibilities = 0;
+                uint64_t span;
+                if (i < 18)
+                {
+                    span = knightSpan >> 18 - i;
+                }
+                else
+                {
+                    span = knightSpan << i - 18;
+                }
+                if (i % 8 < 5)
+                {
+                    thisKnightsPossibilities |= (span & ~(filesGH));
+                }
+                else
+                {
+                    thisKnightsPossibilities |= (span & ~(filesAB));
+                }
+                unsafe |= thisKnightsPossibilities;
+            }
+        }
         //bishop/queen
         uint64_t bishopQueenCaptures = 0;
         uint64_t QB = boardGeneration.WQ | boardGeneration.WB;
