@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <bitset>
 using namespace std;
 
 class Moves
@@ -73,7 +74,7 @@ public:
 
         while (direction == East)
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) | (testingSquare & fileA) != 0)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) | (testingSquare & fileA) != 0 || testingSquare == 0)
             {
                 testingSquare = sBinary << 8;
                 direction = South;
@@ -94,7 +95,7 @@ public:
 
         while (direction == South)
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) || testingSquare >= UINT64_MAX)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || testingSquare >= UINT64_MAX || testingSquare == 0)
             {
                 testingSquare = sBinary >> 1;
                 direction = West;
@@ -283,7 +284,7 @@ public:
 
         while (direction == Southeast)
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileA) != 0) || testingSquare >= UINT64_MAX)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileA) != 0) || testingSquare >= UINT64_MAX || testingSquare == 0)
             {
                 testingSquare = sBinary << 7;
                 direction = Southwest;
@@ -304,7 +305,7 @@ public:
 
         while (direction == Southwest)
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileH) != 0) || testingSquare >= UINT64_MAX)
+            if (((testingSquare & maskedBlockers & myPieces) != 0) || ((testingSquare & fileH) != 0) || testingSquare >= UINT64_MAX || testingSquare == 0)
             {
                 testingSquare = sBinary >> 9;
                 direction = Northwest;
@@ -711,33 +712,37 @@ public:
     string possibleN()
     {
         uint64_t N;
+        uint64_t friendlyPieces;
         if (boardGeneration.whiteToMove)
         {
             N = boardGeneration.WN;
+            friendlyPieces = boardGeneration.whitePieces();
         }
         else
         {
             N = boardGeneration.BN;
+            friendlyPieces = boardGeneration.blackPieces();
         }
         string movesList = "";
         string binaryN = convertBitboardToStringRep(N);
 
-        for (int i = 0; i < strlen(binaryN.c_str()); i++)
+        for (int i = 63; i >= 0; i--)
         {
-            char character = binaryN[i];
+            int y = 63 - i;
+            char character = binaryN[y];
             if (character == '1')
             {
                 uint64_t thisKnightsPossibilities = 0;
                 uint64_t span;
-                if (i < 18)
+                if (y < 18)
                 {
-                    span = knightSpan >> 18 - i;
+                    span = knightSpan >> 18 - y;
                 }
                 else
                 {
-                    span = knightSpan << i - 18;
+                    span = knightSpan << y - 18;
                 }
-                if (i % 8 < 5)
+                if (y % 8 < 5)
                 {
                     thisKnightsPossibilities |= (span & ~(filesGH));
                 }
@@ -745,13 +750,14 @@ public:
                 {
                     thisKnightsPossibilities |= (span & ~(filesAB));
                 }
+                thisKnightsPossibilities &= ~friendlyPieces;
                 string thisKnightsPossibilitiesBinary = convertBitboardToStringRep(thisKnightsPossibilities);
                 for (int j = 0; j < strlen(binaryN.c_str()); j++)
                 {
                     char character = thisKnightsPossibilitiesBinary[j];
                     if (character == '1')
                     {
-                        movesList += (to_string(i / 8) + to_string(i % 8) + to_string(j / 8) + to_string(j % 8));
+                        movesList += (to_string(y / 8) + to_string(y % 8) + to_string(j / 8) + to_string(j % 8));
                     }
                 }
             }
@@ -775,7 +781,7 @@ public:
         string movesList = "";
         string binaryB = convertBitboardToStringRep(B);
 
-        for (int i = 0; i < strlen(binaryB.c_str()); i++)
+         for (int i = 0; i < strlen(binaryB.c_str()); i++)
         {
             char character = binaryB[i];
             if (character == '1')
@@ -1155,6 +1161,18 @@ public:
         return unsafe;
     }
 
+    string pseudoLegalMovesW() {
+        string p = possibleWP();
+        string n = possibleN();
+        string b = possibleB();
+        string r = possibleR();
+        string q = possibleQ();
+        string k = possibleK();
+        string c = possibleCW();
+        string list = p + n + b + r + q + k + c;
+        return list;
+    }
+
     int countLeadingZeros(uint64_t x)
     {
         // Keep shifting x by one until leftmost bit
@@ -1206,18 +1224,8 @@ public:
 
             if (character == '1')
             {
-
-                string start = to_string(s);
-                if (strlen(start.c_str()) == 1)
-                {
-                    start = "0" + start;
-                }
-                string end = to_string(i);
-                if (strlen(end.c_str()) == 1)
-                {
-                    end = "0" + end;
-                }
-
+                string start = to_string(s / 8) + to_string(s % 8);
+                string end = to_string(i / 8) + to_string(i % 8);
                 movesList = movesList + start + end;
             }
         }
@@ -1226,15 +1234,9 @@ public:
 
     string convertBitboardToStringRep(uint64_t bitboard)
     {
-        string bitBoardString = std::bitset<64>(bitboard).to_string();
-
-        //Pad binaryPossibilities string to 64 chars
-        std::stringstream ss;
-        ss << std::setw(64) << std::setfill('0') << bitBoardString;
-        bitBoardString = ss.str();
-
-        reverse(bitBoardString.begin(), bitBoardString.end());
-        return bitBoardString;
+        std::string s = std::bitset< 64 >( bitboard ).to_string();
+        reverse(s.begin(), s.end());
+        return s;
     }
 
     int convertUint64ToIndex(uint64_t n)

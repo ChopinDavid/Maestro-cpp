@@ -46,7 +46,7 @@ public:
     }
 
     uint64_t empty() {
-        return ~(WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK );
+        return ~(WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK);
     }
     
 

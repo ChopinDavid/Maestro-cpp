@@ -3,7 +3,6 @@
 #include "../maestro/boardGeneration.h"
 #include "../maestro/moves.h"
 
-
 //Move generation tests
 TEST_CASE("importFEN works")
 {
@@ -77,7 +76,7 @@ TEST_CASE("diagonal and anti-diagonal move generation works")
     REQUIRE(moves.diagonalAndAntiDiagonalMoves(35) == 4693335752243822976);
 
     boardGeneration.importFEN("8/8/8/8/4B3/8/8/8 w - - 0 1");
-    REQUIRE(moves.diagonalAndAntiDiagonalMoves(36) == 9386671504487645697);
+    REQUIRE(moves.diagonalAndAntiDiagonalMoves(36) == 9386671504487645697ULL);
 
     boardGeneration.importFEN("8/8/8/4p3/3p4/2p5/1B6/8 w - - 0 1");
     REQUIRE(moves.diagonalAndAntiDiagonalMoves(49) == 360293467747778560);
@@ -159,6 +158,9 @@ TEST_CASE("knight move generation works")
 
     boardGeneration.importFEN("N6K/8/8/8/8/8/8/N6k w - - 0 1");
     REQUIRE(moves.possibleN() == "0012002170517062");
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(moves.possibleN() == "5534553655435547557671507152");
 }
 
 TEST_CASE("bishop move generation works")
@@ -167,7 +169,10 @@ TEST_CASE("bishop move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("8/8/8/2p1P3/3B4/4p3/8/8 w - - 0 1");
-    REQUIRE(moves.possibleB() == "35263542354435493556");
+    REQUIRE(moves.possibleB() == "43324352435443614370");
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(moves.possibleB() == "421542204224423142334251425342644275");
 }
 
 TEST_CASE("rook move generation works")
@@ -176,7 +181,7 @@ TEST_CASE("rook move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("8/8/8/3p4/3Rp3/8/8/8 w - - 0 1");
-    REQUIRE(moves.possibleR() == "35273532353335343536354335513559");
+    REQUIRE(moves.possibleR() == "43334340434143424344435343634373");
 }
 
 TEST_CASE("queen move generation works")
@@ -185,7 +190,7 @@ TEST_CASE("queen move generation works")
     Moves &moves = Moves::getInstance();
 
     boardGeneration.importFEN("8/8/8/3p4/3Qp3/8/8/8 w - - 0 1");
-    REQUIRE(moves.possibleQ() == "350735083514351735213526352735283532353335343536354235433544354935513553355635593562");
+    REQUIRE(moves.possibleQ() == "430743104316432143254332433343344340434143424344435243534354436143634365437043734376");
 }
 
 TEST_CASE("king move generation works")
@@ -274,4 +279,18 @@ TEST_CASE("black castling calculation works") {
 
     boardGeneration.importFEN("r6r/pppkppbp/2np1np1/1QPPqb2/8/1PN1PN2/P3BPPP/R1B2RK1 b - - 0 13");
     REQUIRE(moves.possibleCB() == "");
+}
+
+TEST_CASE("pseudolegal white move generation works") {
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(moves.pseudoLegalMovesW() == "605061516252635366566757604061416343664667475534553655435547557671507152421542204224423142334251425342644275777577767364746474757476");
+
+    boardGeneration.importFEN("2B5/4k2K/P7/7b/2r2pP1/3P1QpP/5Rn1/2R1r3 w - - 0 1");
+    REQUIRE(moves.pseudoLegalMovesW() == "463753422010463653435747021102130224023565606561656265636564656665757242725272627270727172737274550055115522553355445545555455565564556655731706170717161727");
+
+    boardGeneration.importFEN("8/4P3/8/PkPpBr2/RpN2p2/1PP2R1K/8/n7 w - d6 0 1");
+    REQUIRE(moves.pseudoLegalMovesW() == "52413020322244QP44RP44BP44NP23WE4221422342504254426142633401340734123416342334253443344540414050406040705545555355545556556555755746574757665767");
 }
