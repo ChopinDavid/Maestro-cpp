@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <cstring>
 #include <bitset>
+#include <algorithm>
 using namespace std;
 
 class Moves
@@ -1162,14 +1163,12 @@ public:
     }
 
     string pseudoLegalMovesW() {
-        string p = possibleWP();
-        string n = possibleN();
-        string b = possibleB();
-        string r = possibleR();
-        string q = possibleQ();
-        string k = possibleK();
-        string c = possibleCW();
-        string list = p + n + b + r + q + k + c;
+        string list = possibleWP() + possibleN() + possibleB() + possibleR() + possibleQ() + possibleK() + possibleCW();
+        return list;
+    }
+
+    string pseudoLegalMovesB() {
+        string list = possibleBP() + possibleN() + possibleB() + possibleR() + possibleQ() + possibleK() + possibleCB();
         return list;
     }
 
