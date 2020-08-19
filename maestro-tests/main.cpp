@@ -28,6 +28,16 @@ TEST_CASE("importFEN works")
     REQUIRE(boardGeneration.CBQ == false);
 }
 
+TEST_CASE("drawArray works") {
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    
+    boardGeneration.importFEN("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
+    REQUIRE(boardGeneration.boardString() == "[   ][ n ][ b ][ q ][ k ][ b ][ n ][ r ]\n[ r ][ p ][ p ][ p ][ p ][   ][   ][ p ]\n[ p ][   ][   ][   ][   ][ p ][   ][   ]\n[   ][   ][   ][   ][   ][ P ][ p ][   ]\n[   ][   ][   ][   ][   ][   ][   ][   ]\n[   ][   ][   ][   ][   ][   ][   ][ P ]\n[ P ][ P ][ P ][ P ][ P ][   ][ P ][ R ]\n[ R ][ N ][ B ][ Q ][ K ][ B ][ N ][   ]");
+
+    
+    REQUIRE(boardGeneration.boardString() == "[   ][ n ][ b ][ q ][ k ][ b ][ n ][ r ]\n[ r ][ p ][ p ][ p ][ p ][   ][   ][ p ]\n[ p ][   ][   ][   ][   ][ p ][   ][   ]\n[   ][   ][   ][   ][   ][ P ][ p ][   ]\n[   ][   ][   ][   ][   ][   ][   ][   ]\n[   ][   ][   ][   ][   ][   ][   ][ P ]\n[ P ][ P ][ P ][ P ][ P ][   ][ P ][ R ]\n[ R ][ N ][ B ][ Q ][ K ][ B ][ N ][   ]");
+}
+
 TEST_CASE("horizontal and vertical move generation works")
 {
     BoardGeneration &boardGeneration = BoardGeneration::getInstance();
@@ -139,10 +149,10 @@ TEST_CASE("black pawn move generation works")
     REQUIRE(moves.possibleBP() == "4252445443WE23WE");
 
     boardGeneration.importFEN("8/8/8/8/8/8/2p5/1N1N4 b - - 0 1");
-    REQUIRE(moves.possibleBP() == "21QP21RP21BP21NP23QP23RP23BP23NP22QP22RP22BP22NP");
+    REQUIRE(moves.possibleBP() == "21Qp21Rp21Bp21Np23Qp23Rp23Bp23Np22Qp22Rp22Bp22Np");
 
     boardGeneration.importFEN("8/8/8/8/5pP1/8/2p5/1N1N4 b - g3 0 1");
-    REQUIRE(moves.possibleBP() == "455521QP21RP21BP21NP23QP23RP23BP23NP22QP22RP22BP22NP56WE");
+    REQUIRE(moves.possibleBP() == "455521Qp21Rp21Bp21Np23Qp23Rp23Bp23Np22Qp22Rp22Bp22Np56WE");
 }
 
 TEST_CASE("knight move generation works")
@@ -304,4 +314,49 @@ TEST_CASE("pseudolegal black move generation works") {
 
     boardGeneration.importFEN("rnb1k2r/pp1pb2p/1q2pnp1/5p2/2pPPP2/5NPP/PPP3BK/RNBQ1R2 b kq d3 0 9");
     REQUIRE(moves.pseudoLegalMovesB() == "354410201323172724342636425210301333173723WE0120012225062533253725442546140314051423143214411450070507062103211221202122212321302131213221412143215121610403040504150406");
+}
+
+TEST_CASE("move making works") {
+    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
+    Moves &moves = Moves::getInstance();
+
+    boardGeneration.importFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R b KQkq - 0 4");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.BB, "0532") == 67108868);
+
+    boardGeneration.importFEN("rnbqkbnr/ppp1ppp1/8/2Pp3p/8/8/PP1PPPPP/RNBQKBNR w KQkq d6 0 3");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.BP, "23WE") == 2147514112);
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.WP, "23WE") == 70650219154898944);
+
+    boardGeneration.importFEN("k1r1r3/3P4/8/8/8/8/8/K7 w - - 0 1");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.WQ, "33QP") == 8);
+
+    boardGeneration.importFEN("k1r1r3/3P4/8/8/8/8/8/K7 w - - 0 1");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.WQ, "32QP") == 4);
+
+    boardGeneration.importFEN("k1r1r3/3P4/8/8/8/8/8/K7 w - - 0 1");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.WQ, "34QP") == 16);
+
+    boardGeneration.importFEN("k7/8/8/8/8/8/3p4/K1R1R3 b - - 0 1");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.BQ, "33Qp") == 576460752303423488);
+
+    boardGeneration.importFEN("k7/8/8/8/8/8/3p4/K1R1R3 b - - 0 1");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.BQ, "32Qp") == 288230376151711744);
+
+    boardGeneration.importFEN("k7/8/8/8/8/8/3p4/K1R1R3 b - - 0 1");
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.BQ, "34Qp") == 1152921504606846976);
+
+    boardGeneration.initiateStandardChess();
+    REQUIRE(moves.makeMoveSinglePiece(boardGeneration.WP, "6444") == 67272588153323520);
+
+    boardGeneration.importFEN("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    moves.makeMoveAll("7476");
+    REQUIRE(boardGeneration.boardString() == "[ r ][   ][ b ][ q ][ k ][   ][ n ][ r ]\n[ p ][ p ][ p ][ p ][   ][ p ][ p ][ p ]\n[   ][   ][ n ][   ][   ][   ][   ][   ]\n[   ][   ][ b ][   ][ p ][   ][   ][   ]\n[   ][   ][ B ][   ][ P ][   ][   ][   ]\n[   ][   ][   ][   ][   ][ N ][   ][   ]\n[ P ][ P ][ P ][ P ][   ][ P ][ P ][ P ]\n[ R ][ N ][ B ][ Q ][   ][ R ][ K ][   ]");
+
+    boardGeneration.importFEN("r2q1rk1/ppp2ppp/2npbn2/2b1p1B1/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ - 2 8");
+    moves.makeMoveAll("7472");
+    REQUIRE(boardGeneration.boardString() == "[ r ][   ][   ][ q ][   ][ r ][ k ][   ]\n[ p ][ p ][ p ][   ][   ][ p ][ p ][ p ]\n[   ][   ][ n ][ p ][ b ][ n ][   ][   ]\n[   ][   ][ b ][   ][ p ][   ][ B ][   ]\n[   ][   ][ B ][   ][ P ][   ][   ][   ]\n[   ][   ][ N ][ P ][   ][ N ][   ][   ]\n[ P ][ P ][ P ][ Q ][   ][ P ][ P ][ P ]\n[   ][   ][ K ][ R ][   ][   ][   ][ R ]");
+
+    boardGeneration.importFEN("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4");
+    moves.makeMoveAll("0406");
+    REQUIRE(boardGeneration.boardString() == "[ r ][ n ][ b ][ q ][   ][ r ][ k ][   ]\n[ p ][ p ][ p ][ p ][   ][ p ][ p ][ p ]\n[   ][   ][   ][   ][   ][ n ][   ][   ]\n[   ][   ][ b ][   ][ p ][   ][   ][   ]\n[   ][   ][ B ][   ][ P ][   ][   ][   ]\n[   ][   ][   ][   ][   ][ N ][   ][   ]\n[ P ][ P ][ P ][ P ][   ][ P ][ P ][ P ]\n[ R ][ N ][ B ][ Q ][   ][ R ][ K ][   ]");
 }

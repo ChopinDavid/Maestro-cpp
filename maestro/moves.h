@@ -659,7 +659,7 @@ public:
                 if (((pawnMoves >> i) & 1) == 1)
                 {
                     string movementString = to_string(i % 8 + 1) + to_string(i % 8);
-                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
+                    moveList += (movementString + "Qp" + movementString + "Rp" + movementString + "Bp" + movementString + "Np");
                 }
             }
         }
@@ -673,7 +673,7 @@ public:
                 if (((pawnMoves >> i) & 1) == 1)
                 {
                     string movementString = to_string(i % 8 - 1) + to_string(i % 8);
-                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
+                    moveList += (movementString + "Qp" + movementString + "Rp" + movementString + "Bp" + movementString + "Np");
                 }
             }
         }
@@ -687,7 +687,7 @@ public:
                 if (((pawnMoves >> i) & 1) == 1)
                 {
                     string movementString = to_string(i % 8) + to_string(i % 8);
-                    moveList += (movementString + "QP" + movementString + "RP" + movementString + "BP" + movementString + "NP");
+                    moveList += (movementString + "Qp" + movementString + "Rp" + movementString + "Bp" + movementString + "Np");
                 }
             }
         }
@@ -782,7 +782,7 @@ public:
         string movesList = "";
         string binaryB = convertBitboardToStringRep(B);
 
-         for (int i = 0; i < strlen(binaryB.c_str()); i++)
+        for (int i = 0; i < strlen(binaryB.c_str()); i++)
         {
             char character = binaryB[i];
             if (character == '1')
@@ -1162,14 +1162,119 @@ public:
         return unsafe;
     }
 
-    string pseudoLegalMovesW() {
+    string pseudoLegalMovesW()
+    {
         string list = possibleWP() + possibleN() + possibleB() + possibleR() + possibleQ() + possibleK() + possibleCW();
         return list;
     }
 
-    string pseudoLegalMovesB() {
+    string pseudoLegalMovesB()
+    {
         string list = possibleBP() + possibleN() + possibleB() + possibleR() + possibleQ() + possibleK() + possibleCB();
         return list;
+    }
+
+    uint64_t makeMoveSinglePiece(uint64_t board, string move)
+    {
+        if (isdigit(move[3]))
+        { //'regular' move
+            int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
+            int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
+            if (move == "7476" && ((1ULL << start) & boardGeneration.WK) != 0 && board == boardGeneration.WR)
+            {
+                //Short white castle
+                board &= ~(1ULL << 63);
+                board |= (1ULL << 61);
+            }
+            else if (move == "7472" && ((1ULL << start) & boardGeneration.WK) != 0 && board == boardGeneration.WR)
+            {
+                //Long white castle
+                board &= ~(1ULL << 56);
+                board |= (1ULL << 59);
+            }
+            else if (move == "0406" && ((1ULL << start) & boardGeneration.BK) != 0 && board == boardGeneration.BR)
+            {
+                //Short black castle
+                board &= ~(1ULL << 7);
+                board |= (1ULL << 5);
+            }
+            else if (move == "0402" && ((1ULL << start) & boardGeneration.BK) != 0 && board == boardGeneration.BR)
+            {
+                //Long black castle
+                board &= ~(1ULL << 0);
+                board |= (1ULL << 3);
+            }
+            else if ((board >> start) & 1 == 1)
+            {
+                board &= ~(1ULL << start);
+                board |= (1ULL << end);
+            }
+            else
+            {
+                board &= ~(1ULL << end);
+            }
+        }
+        else if (tolower(move[3]) == 'p')
+        { //pawn promotion
+            int start;
+            int end;
+            if (isupper(move[3]))
+            {
+                start = countTrailingZeros(fileMasks8[int(move[0]) - 48] & rankMasks8[1]);
+                end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[0]);
+            }
+            else
+            {
+                start = countTrailingZeros(fileMasks8[int(move[0]) - 48] & rankMasks8[6]);
+                end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[7]);
+            }
+
+            board &= ~(1ULL << start);
+            board |= (1ULL << end);
+        }
+        else if (move[3] == 'E')
+        { //en passant
+            int start;
+            int end;
+            if (move[2] == 'W')
+            {
+                start = countTrailingZeros(fileMasks8[int(move[0] - 48)] & rankMasks8[3]);
+                end = countTrailingZeros(fileMasks8[int(move[1] - 48)] & rankMasks8[2]);
+                board &= ~(fileMasks8[int(move[1]) - 48] & rankMasks8[3]);
+            }
+            else
+            {
+                start = countTrailingZeros(fileMasks8[int(move[0]) - 48] & rankMasks8[4]);
+                end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[5]);
+                board &= ~(fileMasks8[int(move[1]) - 48] & rankMasks8[4]);
+            }
+            if (((board >> start) & 1) == 1)
+            {
+                board &= ~(1ULL << start);
+                board |= (1ULL << end);
+            }
+        }
+        else
+        {
+            cout << "ERROR: Invalid move type" << endl;
+        }
+        return board;
+    }
+
+    void makeMoveAll(string move)
+    {
+        boardGeneration.WP = makeMoveSinglePiece(boardGeneration.WP, move);
+        boardGeneration.WN = makeMoveSinglePiece(boardGeneration.WN, move);
+        boardGeneration.WB = makeMoveSinglePiece(boardGeneration.WB, move);
+        boardGeneration.WR = makeMoveSinglePiece(boardGeneration.WR, move);
+        boardGeneration.WQ = makeMoveSinglePiece(boardGeneration.WQ, move);
+        boardGeneration.WK = makeMoveSinglePiece(boardGeneration.WK, move);
+        boardGeneration.BP = makeMoveSinglePiece(boardGeneration.BP, move);
+        boardGeneration.BN = makeMoveSinglePiece(boardGeneration.BN, move);
+        boardGeneration.BB = makeMoveSinglePiece(boardGeneration.BB, move);
+        boardGeneration.BR = makeMoveSinglePiece(boardGeneration.BR, move);
+        boardGeneration.BQ = makeMoveSinglePiece(boardGeneration.BQ, move);
+        boardGeneration.BK = makeMoveSinglePiece(boardGeneration.BK, move);
     }
 
     int countLeadingZeros(uint64_t x)
@@ -1233,7 +1338,7 @@ public:
 
     string convertBitboardToStringRep(uint64_t bitboard)
     {
-        std::string s = std::bitset< 64 >( bitboard ).to_string();
+        std::string s = std::bitset<64>(bitboard).to_string();
         reverse(s.begin(), s.end());
         return s;
     }
