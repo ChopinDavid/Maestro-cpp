@@ -1,7 +1,7 @@
 #ifndef MOVES_H_INCLUDED
 #define MOVES_H_INCLUDED
 
-#include "boardGeneration.h"
+#include "board.h"
 #include "bitboard.h"
 #include "direction.h"
 #include <stdint.h>
@@ -28,25 +28,23 @@ public:
         return shared;
     }
 
-    BoardGeneration &boardGeneration = BoardGeneration::getInstance();
-
-    uint64_t horizontalAndVerticalMoves(int s)
+    uint64_t horizontalAndVerticalMoves(Board board, int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            myPieces = boardGeneration.whitePieces();
+            myPieces = board.whitePieces();
         }
         else
         {
-            myPieces = boardGeneration.blackPieces();
+            myPieces = board.blackPieces();
         }
 
         uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
         uint64_t fileMask = fileMasks8[s % 8];
         uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
-        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
+        uint64_t blockersMask = board.occupied() & ~(sBinary);
         uint64_t maskedBlockers = rookMask & blockersMask;
         uint64_t possibleMoves = 0;
         Direction direction = North;
@@ -138,22 +136,22 @@ public:
         return possibleMoves;
     }
 
-    uint64_t coveredHorizontalAndVericalSquares(int s)
+    uint64_t coveredHorizontalAndVericalSquares(Board board, int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            myPieces = boardGeneration.whitePieces();
+            myPieces = board.whitePieces();
         }
         else
         {
-            myPieces = boardGeneration.blackPieces();
+            myPieces = board.blackPieces();
         }
         uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
         uint64_t fileMask = fileMasks8[s % 8];
         uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
-        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
+        uint64_t blockersMask = board.occupied() & ~(sBinary);
         uint64_t maskedBlockers = rookMask & blockersMask;
         uint64_t coveredSquares = 0;
         Direction direction = North;
@@ -241,22 +239,22 @@ public:
         return coveredSquares;
     }
 
-    uint64_t diagonalAndAntiDiagonalMoves(int s)
+    uint64_t diagonalAndAntiDiagonalMoves(Board board, int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            myPieces = boardGeneration.whitePieces();
+            myPieces = board.whitePieces();
         }
         else
         {
-            myPieces = boardGeneration.blackPieces();
+            myPieces = board.blackPieces();
         }
         uint64_t sBinary = 1ULL << s;
         uint64_t diagonalMask = diagonalMasks8[s % 8 + s / 8];
         uint64_t antiDiagonalMask = antiDiagonalMasks8[(7 - s % 8) + s / 8];
         uint64_t bishopMask = (diagonalMask | antiDiagonalMask) & ~(sBinary);
-        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
+        uint64_t blockersMask = board.occupied() & ~(sBinary);
         uint64_t maskedBlockers = bishopMask & blockersMask;
         uint64_t possibleMoves = 0;
         Direction direction = Northeast;
@@ -348,22 +346,22 @@ public:
         return possibleMoves;
     }
 
-    uint64_t coveredDiagonalAndAntiDiagonalSquares(int s)
+    uint64_t coveredDiagonalAndAntiDiagonalSquares(Board board, int s)
     {
         uint64_t myPieces;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            myPieces = boardGeneration.whitePieces();
+            myPieces = board.whitePieces();
         }
         else
         {
-            myPieces = boardGeneration.blackPieces();
+            myPieces = board.blackPieces();
         }
         uint64_t sBinary = 1ULL << s;
         uint64_t diagonalMask = diagonalMasks8[s % 8 + s / 8];
         uint64_t antiDiagonalMask = antiDiagonalMasks8[(7 - s % 8) + s / 8];
         uint64_t bishopMask = (diagonalMask | antiDiagonalMask) & ~(sBinary);
-        uint64_t blockersMask = boardGeneration.occupied() & ~(sBinary);
+        uint64_t blockersMask = board.occupied() & ~(sBinary);
         uint64_t maskedBlockers = bishopMask & blockersMask;
         uint64_t coveredSquares = 0;
         Direction direction = Northeast;
@@ -476,13 +474,13 @@ public:
         return coveredSquares;
     }
 
-    string possibleWP()
+    string possibleWP(Board board)
     {
         string moveList = "";
         uint64_t possibility;
 
         //first, look at right-captures
-        uint64_t pawnMoves = (boardGeneration.WP >> 7) & boardGeneration.blackPieces() & ~rank8 & ~fileA;
+        uint64_t pawnMoves = (board.getWP() >> 7) & board.blackPieces() & ~rank8 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -495,7 +493,7 @@ public:
         }
 
         //now, left-captures
-        pawnMoves = (boardGeneration.WP >> 9) & boardGeneration.blackPieces() & ~rank8 & ~fileH;
+        pawnMoves = (board.getWP() >> 9) & board.blackPieces() & ~rank8 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -508,7 +506,7 @@ public:
         }
 
         //now, moving 1 forward
-        pawnMoves = (boardGeneration.WP >> 8) & boardGeneration.empty() & ~rank8;
+        pawnMoves = (board.getWP() >> 8) & board.empty() & ~rank8;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -521,7 +519,7 @@ public:
         }
 
         //now, moving 2 forward
-        pawnMoves = (boardGeneration.WP >> 16) & boardGeneration.empty() & (boardGeneration.empty() >> 8) & rank4;
+        pawnMoves = (board.getWP() >> 16) & board.empty() & (board.empty() >> 8) & rank4;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -534,7 +532,7 @@ public:
         }
 
         //now, promoting, capturing right
-        pawnMoves = (boardGeneration.WP >> 7) & boardGeneration.occupied() & boardGeneration.blackPieces() & rank8 & ~fileA;
+        pawnMoves = (board.getWP() >> 7) & board.occupied() & board.blackPieces() & rank8 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -548,7 +546,7 @@ public:
         }
 
         //now, promoting, capturing left
-        pawnMoves = (boardGeneration.WP >> 9) & boardGeneration.occupied() & boardGeneration.blackPieces() & rank8 & ~fileH;
+        pawnMoves = (board.getWP() >> 9) & board.occupied() & board.blackPieces() & rank8 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -562,7 +560,7 @@ public:
         }
 
         //now, promoting, moving 1 forward
-        pawnMoves = (boardGeneration.WP >> 8) & boardGeneration.empty() & rank8;
+        pawnMoves = (board.getWP() >> 8) & board.empty() & rank8;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -576,14 +574,14 @@ public:
         }
 
         //En passant
-        possibility = (boardGeneration.WP << 1) & boardGeneration.BP & rank5 & ~fileA & boardGeneration.EP;
+        possibility = (board.getWP() << 1) & board.getBP() & rank5 & ~fileA & board.getEP();
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
             moveList += (to_string(index % 8 - 1) + to_string(index % 8) + "WE");
         }
 
-        possibility = (boardGeneration.WP >> 1) & boardGeneration.BP & rank5 & ~fileH & boardGeneration.EP;
+        possibility = (board.getWP() >> 1) & board.getBP() & rank5 & ~fileH & board.getEP();
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
@@ -593,13 +591,13 @@ public:
         return moveList;
     }
 
-    string possibleBP()
+    string possibleBP(Board board)
     {
         string moveList = "";
         uint64_t possibility;
 
         //first, look at right-captures
-        uint64_t pawnMoves = (boardGeneration.BP << 7) & boardGeneration.whitePieces() & ~rank1 & ~fileH;
+        uint64_t pawnMoves = (board.getBP() << 7) & board.whitePieces() & ~rank1 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -612,7 +610,7 @@ public:
         }
 
         //now, left-captures
-        pawnMoves = (boardGeneration.BP << 9) & boardGeneration.whitePieces() & ~rank1 & ~fileA;
+        pawnMoves = (board.getBP() << 9) & board.whitePieces() & ~rank1 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -625,7 +623,7 @@ public:
         }
 
         //now, moving 1 forward
-        pawnMoves = (boardGeneration.BP << 8) & boardGeneration.empty() & ~rank1;
+        pawnMoves = (board.getBP() << 8) & board.empty() & ~rank1;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -638,7 +636,7 @@ public:
         }
 
         //now, moving 2 forward
-        pawnMoves = (boardGeneration.BP << 16) & boardGeneration.empty() & (boardGeneration.empty() << 8) & rank5;
+        pawnMoves = (board.getBP() << 16) & board.empty() & (board.empty() << 8) & rank5;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -651,7 +649,7 @@ public:
         }
 
         //now, promoting, capturing right
-        pawnMoves = (boardGeneration.BP << 7) & boardGeneration.occupied() & boardGeneration.whitePieces() & rank1 & ~fileH;
+        pawnMoves = (board.getBP() << 7) & board.occupied() & board.whitePieces() & rank1 & ~fileH;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -665,7 +663,7 @@ public:
         }
 
         //now, promoting, capturing left
-        pawnMoves = (boardGeneration.BP << 9) & boardGeneration.occupied() & boardGeneration.whitePieces() & rank1 & ~fileA;
+        pawnMoves = (board.getBP() << 9) & board.occupied() & board.whitePieces() & rank1 & ~fileA;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -679,7 +677,7 @@ public:
         }
 
         //now, promoting, moving 1 forward
-        pawnMoves = (boardGeneration.BP << 8) & boardGeneration.empty() & rank1;
+        pawnMoves = (board.getBP() << 8) & board.empty() & rank1;
         if (pawnMoves != 0)
         {
             for (int i = countTrailingZeros(pawnMoves); i < 64 - countLeadingZeros(pawnMoves); i++)
@@ -693,14 +691,14 @@ public:
         }
 
         //En passant
-        possibility = (boardGeneration.BP >> 1) & boardGeneration.WP & rank4 & ~fileH & boardGeneration.EP;
+        possibility = (board.getBP() >> 1) & board.getWP() & rank4 & ~fileH & board.getEP();
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
             moveList += (to_string(index % 8 + 1) + to_string(index % 8) + "WE");
         }
 
-        possibility = (boardGeneration.BP << 1) & boardGeneration.WP & rank4 & ~fileA & boardGeneration.EP;
+        possibility = (board.getBP() << 1) & board.getWP() & rank4 & ~fileA & board.getEP();
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
@@ -710,19 +708,19 @@ public:
         return moveList;
     }
 
-    string possibleN()
+    string possibleN(Board board)
     {
         uint64_t N;
         uint64_t friendlyPieces;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            N = boardGeneration.WN;
-            friendlyPieces = boardGeneration.whitePieces();
+            N = board.getWN();
+            friendlyPieces = board.whitePieces();
         }
         else
         {
-            N = boardGeneration.BN;
-            friendlyPieces = boardGeneration.blackPieces();
+            N = board.getBN();
+            friendlyPieces = board.blackPieces();
         }
         string movesList = "";
         string binaryN = convertBitboardToStringRep(N);
@@ -767,16 +765,16 @@ public:
         return movesList;
     }
 
-    string possibleB()
+    string possibleB(Board board)
     {
         uint64_t B;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            B = boardGeneration.WB;
+            B = board.getWB();
         }
         else
         {
-            B = boardGeneration.BB;
+            B = board.getBB();
         }
 
         string movesList = "";
@@ -787,23 +785,23 @@ public:
             char character = binaryB[i];
             if (character == '1')
             {
-                uint64_t possibleDestinations = diagonalAndAntiDiagonalMoves(i);
+                uint64_t possibleDestinations = diagonalAndAntiDiagonalMoves(board, i);
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
             }
         }
         return movesList;
     }
 
-    string possibleR()
+    string possibleR(Board board)
     {
         uint64_t R;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            R = boardGeneration.WR;
+            R = board.getWR();
         }
         else
         {
-            R = boardGeneration.BR;
+            R = board.getBR();
         }
 
         string movesList = "";
@@ -814,23 +812,23 @@ public:
             char character = binaryR[i];
             if (character == '1')
             {
-                uint64_t possibleDestinations = horizontalAndVerticalMoves(i);
+                uint64_t possibleDestinations = horizontalAndVerticalMoves(board, i);
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
             }
         }
         return movesList;
     }
 
-    string possibleQ()
+    string possibleQ(Board board)
     {
         uint64_t Q;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            Q = boardGeneration.WQ;
+            Q = board.getWQ();
         }
         else
         {
-            Q = boardGeneration.BQ;
+            Q = board.getBQ();
         }
 
         string movesList = "";
@@ -841,8 +839,8 @@ public:
             char character = binaryQ[i];
             if (character == '1')
             {
-                uint64_t hv = horizontalAndVerticalMoves(i);
-                uint64_t da = diagonalAndAntiDiagonalMoves(i);
+                uint64_t hv = horizontalAndVerticalMoves(board, i);
+                uint64_t da = diagonalAndAntiDiagonalMoves(board, i);
                 uint64_t possibleDestinations = hv | da;
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
             }
@@ -850,16 +848,16 @@ public:
         return movesList;
     }
 
-    string possibleK()
+    string possibleK(Board board)
     {
         uint64_t K;
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            K = boardGeneration.WK;
+            K = board.getWK();
         }
         else
         {
-            K = boardGeneration.BK;
+            K = board.getBK();
         }
         string movesList = "";
         uint64_t possibility;
@@ -874,23 +872,23 @@ public:
         }
         if (iLocation % 8 < 4)
         {
-            possibility &= ~filesGH & ~(boardGeneration.whitePieces());
+            possibility &= ~filesGH & ~(board.whitePieces());
         }
         else
         {
-            possibility &= ~filesAB & ~(boardGeneration.whitePieces());
+            possibility &= ~filesAB & ~(board.whitePieces());
         }
 
-        if (boardGeneration.whiteToMove)
+        if (board.getWhiteToMove())
         {
-            uint64_t safeSquares = ~unsafeForWhite();
-            uint64_t nonWhiteOccupiedSquares = ~(boardGeneration.WP | boardGeneration.WN | boardGeneration.WB | boardGeneration.WR | boardGeneration.WQ);
+            uint64_t safeSquares = ~unsafeForWhite(board);
+            uint64_t nonWhiteOccupiedSquares = ~(board.getWP() | board.getWN() | board.getWB() | board.getWR() | board.getWQ());
             possibility = possibility & safeSquares & nonWhiteOccupiedSquares;
         }
         else
         {
-            uint64_t safeSquares = ~unsafeForBlack();
-            uint64_t nonBlackOccupiedSquares = ~(boardGeneration.BP | boardGeneration.BN | boardGeneration.BB | boardGeneration.BR | boardGeneration.BQ);
+            uint64_t safeSquares = ~unsafeForBlack(board);
+            uint64_t nonBlackOccupiedSquares = ~(board.getBP() | board.getBN() | board.getBB() | board.getBR() | board.getBQ());
             possibility = possibility & safeSquares & nonBlackOccupiedSquares;
         }
 
@@ -908,16 +906,16 @@ public:
         return movesList;
     }
 
-    string possibleCW()
+    string possibleCW(Board board)
     {
-        uint64_t occupiedSquares = boardGeneration.occupied();
+        uint64_t occupiedSquares = board.occupied();
         string movesList = "";
-        uint64_t unsafe = unsafeForWhite();
+        uint64_t unsafe = unsafeForWhite(board);
 
-        bool inCheck = (unsafe & boardGeneration.WK) != 0;
+        bool inCheck = (unsafe & board.getWK()) != 0;
         if (!inCheck)
         {
-            if (boardGeneration.CWK && (((1ULL << castleRooks[0]) & boardGeneration.WR) != 0))
+            if (board.getCWK() && (((1ULL << castleRooks[0]) & board.getWR()) != 0))
             {
                 uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
                 uint64_t kingSideBishopAndKnight = ((1ULL << 61) | (1ULL << 62));
@@ -928,7 +926,7 @@ public:
                 }
             }
 
-            if (boardGeneration.CWQ && (((1ULL << castleRooks[1]) & boardGeneration.WR) != 0))
+            if (board.getCWQ() && (((1ULL << castleRooks[1]) & board.getWR()) != 0))
             {
                 uint64_t knight = (1ULL << 57);
                 uint64_t bishop = (1ULL << 58);
@@ -944,16 +942,16 @@ public:
         return movesList;
     }
 
-    string possibleCB()
+    string possibleCB(Board board)
     {
-        uint64_t occupiedSquares = boardGeneration.occupied();
+        uint64_t occupiedSquares = board.occupied();
         string movesList = "";
-        uint64_t unsafe = unsafeForBlack();
+        uint64_t unsafe = unsafeForBlack(board);
 
-        bool inCheck = (unsafe & boardGeneration.BK) != 0;
+        bool inCheck = (unsafe & board.getBK()) != 0;
         if (!inCheck)
         {
-            if (boardGeneration.CBK && (((1ULL << castleRooks[2]) & boardGeneration.BR) != 0))
+            if (board.getCBK() && (((1ULL << castleRooks[2]) & board.getBR()) != 0))
             {
                 uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
                 uint64_t kingSideBishopAndKnight = ((1ULL << 5) | (1ULL << 6));
@@ -963,7 +961,7 @@ public:
                     movesList += "0406";
                 }
             }
-            if (boardGeneration.CBQ && (((1ULL << castleRooks[3]) & boardGeneration.BR) != 0))
+            if (board.getCBQ() && (((1ULL << castleRooks[3]) & board.getBR()) != 0))
             {
                 uint16_t knight = (1ULL << 1);
                 uint64_t bishop = (1ULL << 2);
@@ -978,20 +976,20 @@ public:
         return movesList;
     }
 
-    uint64_t unsafeForWhite()
+    uint64_t unsafeForWhite(Board board)
     {
-        uint64_t occupiedSquares = boardGeneration.occupied();
-        uint64_t opponentSquares = boardGeneration.whitePieces();
+        uint64_t occupiedSquares = board.occupied();
+        uint64_t opponentSquares = board.whitePieces();
         uint64_t unsafe = 0;
         //pawn
-        uint64_t rightCaptures = ((boardGeneration.BP << 7) & ~fileH);
-        uint64_t leftCaptures = ((boardGeneration.BP << 9) & ~fileA);
+        uint64_t rightCaptures = ((board.getBP() << 7) & ~fileH);
+        uint64_t leftCaptures = ((board.getBP() << 9) & ~fileA);
         uint64_t pawnCaptures = rightCaptures | leftCaptures;
         unsafe = pawnCaptures;
         uint64_t possibility;
         //knight
         uint64_t knightCaptures = 0;
-        string binaryN = convertBitboardToStringRep(boardGeneration.BN);
+        string binaryN = convertBitboardToStringRep(board.getBN());
 
         for (int i = 0; i < strlen(binaryN.c_str()); i++)
         {
@@ -1021,35 +1019,35 @@ public:
         }
         //bishop/queen
         uint64_t bishopQueenCaptures = 0;
-        uint64_t QB = boardGeneration.BQ | boardGeneration.BB;
+        uint64_t QB = board.getBQ() | board.getBB();
         string QBBinary = convertBitboardToStringRep(QB);
         for (int i = 0; i < strlen(QBBinary.c_str()); i++)
         {
             char character = QBBinary[i];
             if (character == '1')
             {
-                uint64_t covered = coveredDiagonalAndAntiDiagonalSquares(i);
+                uint64_t covered = coveredDiagonalAndAntiDiagonalSquares(board, i);
                 bishopQueenCaptures |= covered;
             }
         }
         unsafe |= bishopQueenCaptures;
         //rook/queen
         uint64_t rookQueenCaptures = 0;
-        uint64_t QR = boardGeneration.BQ | boardGeneration.BR;
+        uint64_t QR = board.getBQ() | board.getBR();
         string QRBinary = convertBitboardToStringRep(QR);
         for (int i = 0; i < strlen(QRBinary.c_str()); i++)
         {
             char character = QRBinary[i];
             if (character == '1')
             {
-                uint64_t covered = coveredHorizontalAndVericalSquares(i);
+                uint64_t covered = coveredHorizontalAndVericalSquares(board, i);
                 rookQueenCaptures |= covered;
             }
         }
         unsafe |= rookQueenCaptures;
         //king
         uint64_t kingCaptures = 0;
-        int iLocation = countTrailingZeros(boardGeneration.BK);
+        int iLocation = countTrailingZeros(board.getBK());
         if (iLocation > 9)
         {
             kingCaptures = kingSpan << (iLocation - 9);
@@ -1070,20 +1068,20 @@ public:
         return unsafe;
     }
 
-    uint64_t unsafeForBlack()
+    uint64_t unsafeForBlack(Board board)
     {
-        uint64_t occupiedSquares = boardGeneration.occupied();
-        uint64_t opponentSquares = boardGeneration.blackPieces();
+        uint64_t occupiedSquares = board.occupied();
+        uint64_t opponentSquares = board.blackPieces();
         uint64_t unsafe = 0;
         //pawn
-        uint64_t rightCaptures = ((boardGeneration.WP >> 7) & ~fileA);
-        uint64_t leftCaptures = ((boardGeneration.WP >> 9) & ~fileH);
+        uint64_t rightCaptures = ((board.getWP() >> 7) & ~fileA);
+        uint64_t leftCaptures = ((board.getWP() >> 9) & ~fileH);
         uint64_t pawnCaptures = rightCaptures | leftCaptures;
         unsafe = pawnCaptures;
         uint64_t possibility;
         //knight
         uint64_t knightCaptures = 0;
-        string binaryN = convertBitboardToStringRep(boardGeneration.WN);
+        string binaryN = convertBitboardToStringRep(board.getWN());
 
         for (int i = 0; i < strlen(binaryN.c_str()); i++)
         {
@@ -1113,35 +1111,35 @@ public:
         }
         //bishop/queen
         uint64_t bishopQueenCaptures = 0;
-        uint64_t QB = boardGeneration.WQ | boardGeneration.WB;
+        uint64_t QB = board.getWQ() | board.getWB();
         string QBBinary = convertBitboardToStringRep(QB);
         for (int i = 0; i < strlen(QBBinary.c_str()); i++)
         {
             char character = QBBinary[i];
             if (character == '1')
             {
-                uint64_t covered = coveredDiagonalAndAntiDiagonalSquares(i);
+                uint64_t covered = coveredDiagonalAndAntiDiagonalSquares(board, i);
                 bishopQueenCaptures |= covered;
             }
         }
         unsafe |= bishopQueenCaptures;
         //rook/queen
         uint64_t rookQueenCaptures = 0;
-        uint64_t QR = boardGeneration.WQ | boardGeneration.WR;
+        uint64_t QR = board.getWQ() | board.getWR();
         string QRBinary = convertBitboardToStringRep(QR);
         for (int i = 0; i < strlen(QRBinary.c_str()); i++)
         {
             char character = QRBinary[i];
             if (character == '1')
             {
-                uint64_t covered = coveredHorizontalAndVericalSquares(i);
+                uint64_t covered = coveredHorizontalAndVericalSquares(board, i);
                 rookQueenCaptures |= covered;
             }
         }
         unsafe |= rookQueenCaptures;
         //king
         uint64_t kingCaptures = 0;
-        int iLocation = countTrailingZeros(boardGeneration.WK);
+        int iLocation = countTrailingZeros(board.getWK());
         if (iLocation > 9)
         {
             kingCaptures = kingSpan << (iLocation - 9);
@@ -1162,56 +1160,60 @@ public:
         return unsafe;
     }
 
-    string pseudoLegalMovesW()
+    string pseudoLegalMovesW(Board board)
     {
-        string list = possibleWP() + possibleN() + possibleB() + possibleR() + possibleQ() + possibleK() + possibleCW();
+        string list = possibleWP(board) + possibleN(board) + possibleB(board) + possibleR(board) + possibleQ(board) + possibleK(board) + possibleCW(board);
         return list;
     }
 
-    string pseudoLegalMovesB()
+    string pseudoLegalMovesB(Board board)
     {
-        string list = possibleBP() + possibleN() + possibleB() + possibleR() + possibleQ() + possibleK() + possibleCB();
+        string list = possibleBP(board) + possibleN(board) + possibleB(board) + possibleR(board) + possibleQ(board) + possibleK(board) + possibleCB(board);
         return list;
     }
 
-    uint64_t makeMoveSinglePiece(uint64_t board, string move)
+    uint64_t makeMoveSinglePiece(Board board, uint64_t bitboard, string move)
     {
         if (isdigit(move[3]))
         { //'regular' move
             int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
             int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
-            if (move == "7476" && ((1ULL << start) & boardGeneration.WK) != 0 && board == boardGeneration.WR)
+            if (move == "7476" && ((1ULL << start) & board.getWK()) != 0 && bitboard == board.getWR())
             {
                 //Short white castle
-                board &= ~(1ULL << 63);
-                board |= (1ULL << 61);
+                bitboard &= ~(1ULL << 63);
+                bitboard |= (1ULL << 61);
             }
-            else if (move == "7472" && ((1ULL << start) & boardGeneration.WK) != 0 && board == boardGeneration.WR)
+            else if (move == "7472" && ((1ULL << start) & board.getWK()) != 0 && bitboard == board.getWR())
             {
                 //Long white castle
-                board &= ~(1ULL << 56);
-                board |= (1ULL << 59);
+                bitboard &= ~(1ULL << 56);
+                bitboard |= (1ULL << 59);
             }
-            else if (move == "0406" && ((1ULL << start) & boardGeneration.BK) != 0 && board == boardGeneration.BR)
+            else if (move == "0406" && ((1ULL << start) & board.getBK()) != 0 && bitboard == board.getBR())
             {
                 //Short black castle
-                board &= ~(1ULL << 7);
-                board |= (1ULL << 5);
+                bitboard &= ~(1ULL << 7);
+                bitboard |= (1ULL << 5);
             }
-            else if (move == "0402" && ((1ULL << start) & boardGeneration.BK) != 0 && board == boardGeneration.BR)
+            else if (move == "0402" && ((1ULL << start) & board.getBK()) != 0 && bitboard == board.getBR())
             {
                 //Long black castle
-                board &= ~(1ULL << 0);
-                board |= (1ULL << 3);
+                bitboard &= ~(1ULL << 0);
+                bitboard |= (1ULL << 3);
             }
-            else if ((board >> start) & 1 == 1)
+            else if ((board.getWhiteToMove() && bitboard == board.getEP() && ((1ULL << start) & board.getWP()) != 0 && move[0] == '6' && move[2] == '4') || (!board.getWhiteToMove() && bitboard == board.getEP() && ((1ULL << start) & board.getBP()) != 0 && move[0] == '1' && move[2] == '3'))
             {
-                board &= ~(1ULL << start);
-                board |= (1ULL << end);
+                bitboard = fileMasks8[int(move[1]) - 48];
+            }
+            else if ((bitboard >> start) & 1 == 1)
+            {
+                bitboard &= ~(1ULL << start);
+                bitboard |= (1ULL << end);
             }
             else
             {
-                board &= ~(1ULL << end);
+                bitboard &= ~(1ULL << end);
             }
         }
         else if (tolower(move[3]) == 'p')
@@ -1229,8 +1231,8 @@ public:
                 end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[7]);
             }
 
-            board &= ~(1ULL << start);
-            board |= (1ULL << end);
+            bitboard &= ~(1ULL << start);
+            bitboard |= (1ULL << end);
         }
         else if (move[3] == 'E')
         { //en passant
@@ -1240,41 +1242,68 @@ public:
             {
                 start = countTrailingZeros(fileMasks8[int(move[0] - 48)] & rankMasks8[3]);
                 end = countTrailingZeros(fileMasks8[int(move[1] - 48)] & rankMasks8[2]);
-                board &= ~(fileMasks8[int(move[1]) - 48] & rankMasks8[3]);
+                bitboard &= ~(fileMasks8[int(move[1]) - 48] & rankMasks8[3]);
             }
             else
             {
                 start = countTrailingZeros(fileMasks8[int(move[0]) - 48] & rankMasks8[4]);
                 end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[5]);
-                board &= ~(fileMasks8[int(move[1]) - 48] & rankMasks8[4]);
+                bitboard &= ~(fileMasks8[int(move[1]) - 48] & rankMasks8[4]);
             }
-            if (((board >> start) & 1) == 1)
+            if (((bitboard >> start) & 1) == 1)
             {
-                board &= ~(1ULL << start);
-                board |= (1ULL << end);
+                bitboard &= ~(1ULL << start);
+                bitboard |= (1ULL << end);
             }
         }
         else
         {
             cout << "ERROR: Invalid move type" << endl;
         }
-        return board;
+        return bitboard;
     }
 
-    void makeMoveAll(string move)
+    Board makeMoveAll(Board board, string move)
     {
-        boardGeneration.WP = makeMoveSinglePiece(boardGeneration.WP, move);
-        boardGeneration.WN = makeMoveSinglePiece(boardGeneration.WN, move);
-        boardGeneration.WB = makeMoveSinglePiece(boardGeneration.WB, move);
-        boardGeneration.WR = makeMoveSinglePiece(boardGeneration.WR, move);
-        boardGeneration.WQ = makeMoveSinglePiece(boardGeneration.WQ, move);
-        boardGeneration.WK = makeMoveSinglePiece(boardGeneration.WK, move);
-        boardGeneration.BP = makeMoveSinglePiece(boardGeneration.BP, move);
-        boardGeneration.BN = makeMoveSinglePiece(boardGeneration.BN, move);
-        boardGeneration.BB = makeMoveSinglePiece(boardGeneration.BB, move);
-        boardGeneration.BR = makeMoveSinglePiece(boardGeneration.BR, move);
-        boardGeneration.BQ = makeMoveSinglePiece(boardGeneration.BQ, move);
-        boardGeneration.BK = makeMoveSinglePiece(boardGeneration.BK, move);
+        uint64_t tWP = makeMoveSinglePiece(board, board.getWP(), move);
+        uint64_t tWN = makeMoveSinglePiece(board, board.getWN(), move);
+        uint64_t tWB = makeMoveSinglePiece(board, board.getWB(), move);
+        uint64_t tWR = makeMoveSinglePiece(board, board.getWR(), move);
+        uint64_t tWQ = makeMoveSinglePiece(board, board.getWQ(), move);
+        uint64_t tWK = makeMoveSinglePiece(board, board.getWK(), move);
+        uint64_t tBP = makeMoveSinglePiece(board, board.getBP(), move);
+        uint64_t tBN = makeMoveSinglePiece(board, board.getBN(), move);
+        uint64_t tBB = makeMoveSinglePiece(board, board.getBB(), move);
+        uint64_t tBR = makeMoveSinglePiece(board, board.getBR(), move);
+        uint64_t tBQ = makeMoveSinglePiece(board, board.getBQ(), move);
+        uint64_t tBK = makeMoveSinglePiece(board, board.getBK(), move);
+        uint64_t tEP = makeMoveSinglePiece(board, board.getEP(), move);
+
+        bool tWhiteToMove = !board.getWhiteToMove();
+        bool tCWK = true;
+        bool tCWQ = true;
+        bool tCBK = true;
+        bool tCBQ = true;
+
+        if (!board.getCWK() || tWK != 1152921504606846976 || (tWR & 9223372036854775808U) == 0) {
+            tCWK = false;
+        }
+
+        if (!board.getCWQ() || tWK != 1152921504606846976 || (tWR & 72057594037927936) == 0) {
+            tCWQ = false;
+        }
+
+        if (!board.getCBK() || tBK != 16 || (tBR & 128) == 0) {
+            tCBK = false;
+        }
+
+        if (!board.getCBQ() || tBK != 16 || (tBR & 1) == 0) {
+            tCBQ = false;
+        }
+
+
+        Board newBoard = Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
+        return newBoard;
     }
 
     int countLeadingZeros(uint64_t x)

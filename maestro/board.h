@@ -7,184 +7,109 @@
 #include "bitboard.h"
 using namespace std;
 
-class BoardGeneration
+class Board
 {
 private:
-    BoardGeneration() {}
+    uint64_t WP;
+    uint64_t WN;
+    uint64_t WB;
+    uint64_t WR;
+    uint64_t WQ;
+    uint64_t WK;
+    uint64_t BP;
+    uint64_t BN;
+    uint64_t BB;
+    uint64_t BR;
+    uint64_t BQ;
+    uint64_t BK;
+    uint64_t EP;
+    bool whiteToMove;
+    bool CWK;
+    bool CWQ;
+    bool CBK;
+    bool CBQ;
 
 public:
-    static BoardGeneration &getInstance()
+    Board(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, uint64_t EP, bool whiteToMove, bool CWK, bool CWQ, bool CBK, bool CBQ) : WP(WP), WN(WN), WB(WB), WR(WR), WQ(WQ), WK(WK), BP(BP), BN(BN), BB(BB), BR(BR), BQ(BQ), BK(BK), EP(EP), whiteToMove(whiteToMove), CWK(CWK), CWQ(CWQ), CBK(CBK), CBQ(CBQ) {};
+
+    static Board initiateStandardChess()
     {
-        static BoardGeneration shared;
-        return shared;
+        return Board(71776119061217280U, 4755801206503243776U, 2594073385365405696U, 9295429630892703744U, 576460752303423488U, 1152921504606846976U, 65280U, 66U, 36U, 129U, 8U, 16U, 0ULL, true, true, true, true, true);
     }
+    static Board from(string FEN) {
+        uint64_t tWP = 0;
+        uint64_t tWN = 0;
+        uint64_t tWB = 0;
+        uint64_t tWR = 0;
+        uint64_t tWQ = 0;
+        uint64_t tWK = 0;
+        uint64_t tBP = 0;
+        uint64_t tBN = 0;
+        uint64_t tBB = 0;
+        uint64_t tBR = 0;
+        uint64_t tBQ = 0;
+        uint64_t tBK = 0;
+        uint64_t tEP = 0;
 
-    uint64_t WP = 0;
-    uint64_t WN = 0;
-    uint64_t WB = 0;
-    uint64_t WR = 0;
-    uint64_t WQ = 0;
-    uint64_t WK = 0;
-    uint64_t BP = 0;
-    uint64_t BN = 0;
-    uint64_t BB = 0;
-    uint64_t BR = 0;
-    uint64_t BQ = 0;
-    uint64_t BK = 0;
-    uint64_t EP = 0;
-
-    uint64_t whitePieces()
-    {
-        return WP | WN | WB | WR | WQ | WK;
-    }
-
-    uint64_t blackPieces()
-    {
-        return BP | BN | BB | BR | BQ | BK;
-    }
-
-    uint64_t occupied()
-    {
-        return whitePieces() + blackPieces();
-    }
-
-    uint64_t empty()
-    {
-        return ~(WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK);
-    }
-
-    bool whiteToMove = true;
-    bool CWK = true;
-    bool CWQ = true;
-    bool CBK = true;
-    bool CBQ = true;
-
-    void initiateStandardChess()
-    {
-        char board[8][8] = {{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}, {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'}, {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'}, {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}};
-        arrayToBitboards(board);
-    }
-
-    void arrayToBitboards(char chessBoard[8][8])
-    {
-
-        for (int i = 0; i < 64; i++)
-        {
-            switch (chessBoard[i / 8][i % 8])
-            {
-            case 'P':
-                WP += 1ULL << i;
-                break;
-            case 'N':
-                WN += 1ULL << i;
-                break;
-            case 'B':
-                WB += 1ULL << i;
-                break;
-            case 'R':
-                WR += 1ULL << i;
-                break;
-            case 'Q':
-                WQ += 1ULL << i;
-                break;
-            case 'K':
-                WK += 1ULL << i;
-                break;
-            case 'p':
-                BP += 1ULL << i;
-                break;
-            case 'n':
-                BN += 1ULL << i;
-                break;
-            case 'b':
-                BB += 1ULL << i;
-                break;
-            case 'r':
-                BR += 1ULL << i;
-                break;
-            case 'q':
-                BQ += 1ULL << i;
-                break;
-            case 'k':
-                BK += 1ULL << i;
-                break;
-            }
-        }
-    }
-
-    void importFEN(string fenString)
-    {
-        WP = 0;
-        WN = 0;
-        WB = 0;
-        WR = 0;
-        WQ = 0;
-        WK = 0;
-        BP = 0;
-        BN = 0;
-        BB = 0;
-        BR = 0;
-        BQ = 0;
-        BK = 0;
-
-        CWK = false;
-        CWQ = false;
-        CBK = false;
-        CBQ = false;
+        bool tWhiteToMove = false;
+        bool tCWK = false;
+        bool tCWQ = false;
+        bool tCBK = false;
+        bool tCBQ = false;
 
         int boardIndex = 0;
         int charIndex = 0;
 
-        while (fenString[charIndex] != ' ')
+        while (FEN[charIndex] != ' ')
         {
-            switch (fenString[charIndex])
+            switch (FEN[charIndex])
             {
             case 'P':
-                WP |= (1ULL << boardIndex);
+                tWP |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'N':
-                WN |= (1ULL << boardIndex);
+                tWN |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'B':
-                WB |= (1ULL << boardIndex);
+                tWB |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'R':
-                WR |= (1ULL << boardIndex);
+                tWR |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'Q':
-                WQ |= (1ULL << boardIndex);
+                tWQ |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'K':
-                WK |= (1ULL << boardIndex);
+                tWK |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'p':
-                BP |= (1ULL << boardIndex);
+                tBP |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'n':
-                BN |= (1ULL << boardIndex);
+                tBN |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'b':
-                BB |= (1ULL << boardIndex);
+                tBB |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'r':
-                BR |= (1ULL << boardIndex);
+                tBR |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'q':
-                BQ |= (1ULL << boardIndex);
+                tBQ |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case 'k':
-                BK |= (1ULL << boardIndex);
+                tBK |= (1ULL << boardIndex);
                 boardIndex++;
                 break;
             case '/':
@@ -219,36 +144,130 @@ public:
             charIndex++;
         }
         charIndex++;
-        whiteToMove = fenString[charIndex] == 'w';
+        tWhiteToMove = FEN[charIndex] == 'w';
 
         charIndex += 2;
 
-        while (fenString[charIndex] != ' ')
+        while (FEN[charIndex] != ' ')
         {
-            switch (fenString[charIndex])
+            switch (FEN[charIndex])
             {
             case '-':
                 break;
             case 'K':
-                CWK = true;
+                tCWK = true;
                 break;
             case 'Q':
-                CWQ = true;
+                tCWQ = true;
                 break;
             case 'k':
-                CBK = true;
+                tCBK = true;
                 break;
             case 'q':
-                CBQ = true;
+                tCBQ = true;
                 break;
             }
             charIndex++;
         }
         charIndex++;
-        if (fenString[charIndex] != '-')
+        if (FEN[charIndex] != '-')
         {
-            EP = fileMasks8[int(tolower(fenString[charIndex])) - 97];
+            tEP = fileMasks8[int(tolower(FEN[charIndex])) - 97];
         }
+
+        return Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
+    }
+
+    uint64_t getWP() {
+        return WP;
+    }
+
+    uint64_t getWN() {
+        return WN;
+    }
+
+    uint64_t getWB() {
+        return WB;
+    }
+
+    uint64_t getWR() {
+        return WR;
+    }
+
+    uint64_t getWQ() {
+        return WQ;
+    }
+
+    uint64_t getWK() {
+        return WK;
+    }
+
+    uint64_t getBP() {
+        return BP;
+    }
+
+    uint64_t getBN() {
+        return BN;
+    }
+
+    uint64_t getBB() {
+        return BB;
+    }
+
+    uint64_t getBR() {
+        return BR;
+    }
+
+    uint64_t getBQ() {
+        return BQ;
+    }
+
+    uint64_t getBK() {
+        return BK;
+    }
+
+    uint64_t getEP() {
+        return EP;
+    }
+
+    bool getWhiteToMove() {
+        return whiteToMove;
+    }
+
+    bool getCWK() {
+        return CWK;
+    }
+
+    bool getCWQ() {
+        return CWQ;
+    }
+
+    bool getCBK() {
+        return CBK;
+    }
+
+    bool getCBQ() {
+        return CBQ;
+    }
+
+    uint64_t whitePieces()
+    {
+        return WP | WN | WB | WR | WQ | WK;
+    }
+
+    uint64_t blackPieces()
+    {
+        return BP | BN | BB | BR | BQ | BK;
+    }
+
+    uint64_t occupied()
+    {
+        return whitePieces() + blackPieces();
+    }
+
+    uint64_t empty()
+    {
+        return ~(WP | WN | WB | WR | WQ | WK | BP | BN | BB | BR | BQ | BK);
     }
 
     string boardString()
