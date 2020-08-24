@@ -340,4 +340,54 @@ TEST_CASE("move making works") {
     board = Board::from("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4");
     board = moves.makeMoveAll(board, "0406");
     REQUIRE(board.boardString() == "[ r ][ n ][ b ][ q ][   ][ r ][ k ][   ]\n[ p ][ p ][ p ][ p ][   ][ p ][ p ][ p ]\n[   ][   ][   ][   ][   ][ n ][   ][   ]\n[   ][   ][ b ][   ][ p ][   ][   ][   ]\n[   ][   ][ B ][   ][ P ][   ][   ][   ]\n[   ][   ][   ][   ][   ][ N ][   ][   ]\n[ P ][ P ][ P ][ P ][   ][ P ][ P ][ P ]\n[ R ][ N ][ B ][ Q ][   ][ R ][ K ][   ]");
+
+    board = Board::from("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(board.getCWK());
+    board = moves.makeMoveAll(board, "7776");
+    REQUIRE(!board.getCWK());
+
+    board = Board::from("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(board.getCWK());
+    board = moves.makeMoveAll(board, "7475");
+    REQUIRE(!board.getCWK());
+
+    board = Board::from("r1b1k1nr/p1pq3p/1pnp1pp1/2b1p3/2B1P2N/2NPBP2/PPPQ2PP/R3K2R w KQkq - 2 10");
+    REQUIRE(board.getCWQ());
+    board = moves.makeMoveAll(board, "7071");
+    REQUIRE(!board.getCWQ());
+
+    board = Board::from("r1b1k1nr/p1pq3p/1pnp1pp1/2b1p3/2B1P2N/2NPBP2/PPPQ2PP/R3K2R w KQkq - 2 10");
+    REQUIRE(board.getCWQ());
+    board = moves.makeMoveAll(board, "7473");
+    REQUIRE(!board.getCWQ());
+
+    board = Board::from("r1b1k2r/p1pqn2p/1pnp1pp1/2b1p3/2B1P2N/2NPBPP1/PPPQ3P/2KR3R b kq - 0 11");
+    REQUIRE(board.getCBK());
+    board = moves.makeMoveAll(board, "0706");
+    REQUIRE(!board.getCBK());
+
+    board = Board::from("r3k2r/pbpqn2p/1pnp1ppB/2b1p3/2B1P2N/2NP1PP1/PPPQ3P/2KR3R b kq - 2 12");
+    REQUIRE(board.getCBK());
+    board = moves.makeMoveAll(board, "0405");
+    REQUIRE(!board.getCBK());
+
+    board = Board::from("r3k2r/pbpqn2p/1pnp1ppB/2b1p3/2B1P2N/2NP1PP1/PPPQ3P/2KR3R b kq - 2 12");
+    REQUIRE(board.getCBQ());
+    board = moves.makeMoveAll(board, "0001");
+    REQUIRE(!board.getCBQ());
+
+    board = Board::from("r3k2r/pbpqn2p/1pnp1ppB/2b1p3/2B1P2N/2NP1PP1/PPPQ3P/2KR3R b kq - 2 12");
+    REQUIRE(board.getCBQ());
+    board = moves.makeMoveAll(board, "0403");
+    REQUIRE(!board.getCBQ());
+
+    board = Board::from("r3k2r/pbpqn2p/1pnp1ppB/2b1p3/2B1P2N/2NP1PP1/PPPQ3P/2KR3R b kq - 2 12");
+    REQUIRE(board.getEP() == 0);
+    board = moves.makeMoveAll(board, "1030");
+    REQUIRE(board.getEP() == 72340172838076673);
+
+    board = Board::from("r3k2r/pbpqn2p/1p1p1ppB/n1b1p3/2B1P2N/2NP1PP1/PPPQ3P/2KR3R w kq - 3 13");
+    REQUIRE(board.getEP() == 0);
+    board = moves.makeMoveAll(board, "6141");
+    REQUIRE(board.getEP() == 144680345676153346);
 }
