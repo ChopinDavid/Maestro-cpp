@@ -121,6 +121,9 @@ TEST_CASE("white pawn move generation works")
 
     board = Board::from("1n1n4/2P5/8/4pP2/8/8/8/8 w - e6 0 1");
     REQUIRE(moves.possibleWP(board) == "352523QP23RP23BP23NP21QP21RP21BP21NP22QP22RP22BP22NP54WE");
+
+    board = Board::from("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ");
+    REQUIRE(moves.possibleWP(board) == "60506151625266566757604061416646674732QP32RP32BP32NP");
 }
 
 TEST_CASE("black pawn move generation works")
@@ -134,16 +137,16 @@ TEST_CASE("black pawn move generation works")
     REQUIRE(moves.possibleBP(board) == "334233443343");
 
     board = Board::from("rnbqkbnr/pp1ppppp/8/8/2pPP3/5P2/PPP3PP/RNBQKBNR b KQkq d3 0 3");
-    REQUIRE(moves.possibleBP(board) == "10201121132314241525162617274252103011311333143415351636173723WE");
+    REQUIRE(moves.possibleBP(board) == "10201121132314241525162617274252103011311333143415351636173723BE");
 
     board = Board::from("8/8/8/8/2pPp3/8/8/8 w - d3 0 1");
-    REQUIRE(moves.possibleBP(board) == "4252445443WE23WE");
+    REQUIRE(moves.possibleBP(board) == "4252445443BE23BE");
 
     board = Board::from("8/8/8/8/8/8/2p5/1N1N4 b - - 0 1");
     REQUIRE(moves.possibleBP(board) == "21Qp21Rp21Bp21Np23Qp23Rp23Bp23Np22Qp22Rp22Bp22Np");
 
     board = Board::from("8/8/8/8/5pP1/8/2p5/1N1N4 b - g3 0 1");
-    REQUIRE(moves.possibleBP(board) == "455521Qp21Rp21Bp21Np23Qp23Rp23Bp23Np22Qp22Rp22Bp22Np56WE");
+    REQUIRE(moves.possibleBP(board) == "455521Qp21Rp21Bp21Np23Qp23Rp23Bp23Np22Qp22Rp22Bp22Np56BE");
 }
 
 TEST_CASE("knight move generation works")
@@ -161,6 +164,12 @@ TEST_CASE("knight move generation works")
 
     board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
     REQUIRE(moves.possibleN(board) == "5534553655435547557671507152");
+
+    board = Board::from("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+    REQUIRE(moves.possibleN(board) == "34133415342234263442344634535231524052715273");
+
+    board = Board::from("rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1");
+    REQUIRE(moves.possibleN(board) == "0120012206250627");
 }
 
 TEST_CASE("bishop move generation works")
@@ -205,6 +214,9 @@ TEST_CASE("king move generation works")
 
     board = Board::from("8/8/8/3k4/2P5/1P6/8/3K4 b - - 0 1");
     REQUIRE(moves.possibleK(board) == "3322332333243332333433433344");
+
+    board = Board::from("8/7p/p5pb/4k3/P1pPn3/8/P5PP/1rB2RK1 b - d3 0 28");
+    REQUIRE(moves.possibleK(board) == "3423342434333443");
 }
 
 TEST_CASE("unsafe for white calculation works")
@@ -284,6 +296,12 @@ TEST_CASE("pseudolegal white move generation works") {
 
     board = Board::from("8/4P3/8/PkPpBr2/RpN2p2/1PP2R1K/8/n7 w - d6 0 1");
     REQUIRE(moves.pseudoLegalMovesW(board) == "52413020322244QP44RP44BP44NP23WE4221422342504254426142633401340734123416342334253443344540414050406040705545555355545556556555755746574757665767");
+
+    board = Board::from("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
+    REQUIRE(moves.pseudoLegalMovesW(board) == "332466573323605061516656604066463413341534223426344234463453523152405271527363276336634563546372642064316442645364736475707170727073777577765525553555375545554655535554555655577473747574767472");
+    
+    board = Board::from("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+    REQUIRE(moves.pseudoLegalMovesW(board) == "60506151625266566757604061416646674732QP32RP32BP32NP6443644564526456647671507152716342154220422442314233425142537227723672457254726377757776732373337343735373637463746574757476");
 }
 
 TEST_CASE("pseudolegal black move generation works") {
@@ -293,7 +311,7 @@ TEST_CASE("pseudolegal black move generation works") {
     REQUIRE(moves.pseudoLegalMovesB(board) == "102017272232314135453646103001130120230423112315234223440211021302200224160716270503050405152503251425152524252625272534254306070615");
 
     board = Board::from("rnb1k2r/pp1pb2p/1q2pnp1/5p2/2pPPP2/5NPP/PPP3BK/RNBQ1R2 b kq d3 0 9");
-    REQUIRE(moves.pseudoLegalMovesB(board) == "354410201323172724342636425210301333173723WE0120012225062533253725442546140314051423143214411450070507062103211221202122212321302131213221412143215121610403040504150406");
+    REQUIRE(moves.pseudoLegalMovesB(board) == "354410201323172724342636425210301333173723BE0120012225062533253725442546140314051423143214411450070507062103211221202122212321302131213221412143215121610403040504150406");
 }
 
 TEST_CASE("move making works") {
@@ -301,32 +319,32 @@ TEST_CASE("move making works") {
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R b KQkq - 0 4");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getBB(), "0532") == 67108868);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getBB(), "0532", 'b') == 67108868);
 
     board = Board::from("rnbqkbnr/ppp1ppp1/8/2Pp3p/8/8/PP1PPPPP/RNBQKBNR w KQkq d6 0 3");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getBP(), "23WE") == 2147514112);
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getWP(), "23WE") == 70650219154898944);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getBP(), "23WE", 'p') == 2147514112);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getWP(), "23WE", 'P') == 70650219154898944);
 
     board = Board::from("k1r1r3/3P4/8/8/8/8/8/K7 w - - 0 1");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getWQ(), "33QP") == 8);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getWQ(), "33QP", 'Q') == 8);
 
     board = Board::from("k1r1r3/3P4/8/8/8/8/8/K7 w - - 0 1");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getWQ(), "32QP") == 4);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getWQ(), "32QP", 'Q') == 4);
 
     board = Board::from("k1r1r3/3P4/8/8/8/8/8/K7 w - - 0 1");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getWQ(), "34QP") == 16);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getWQ(), "34QP", 'Q') == 16);
 
     board = Board::from("k7/8/8/8/8/8/3p4/K1R1R3 b - - 0 1");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getBQ(), "33Qp") == 576460752303423488);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getBQ(), "33Qp", 'q') == 576460752303423488);
 
     board = Board::from("k7/8/8/8/8/8/3p4/K1R1R3 b - - 0 1");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getBQ(), "32Qp") == 288230376151711744);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getBQ(), "32Qp", 'q') == 288230376151711744);
 
     board = Board::from("k7/8/8/8/8/8/3p4/K1R1R3 b - - 0 1");
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getBQ(), "34Qp") == 1152921504606846976);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getBQ(), "34Qp", 'q') == 1152921504606846976);
 
     board = Board::initiateStandardChess();
-    REQUIRE(moves.makeMoveSinglePiece(board, board.getWP(), "6444") == 67272588153323520);
+    REQUIRE(moves.makeMoveSinglePiece(board, board.getWP(), "6444", 'P') == 67272588153323520);
 
     board = Board::from("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
     board = moves.makeMoveAll(board, "7476");
@@ -390,4 +408,35 @@ TEST_CASE("move making works") {
     REQUIRE(board.getEP() == 0);
     board = moves.makeMoveAll(board, "6141");
     REQUIRE(board.getEP() == 144680345676153346);
+
+    board = Board::from("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+    board = moves.makeMoveAll(board, "32QP");
+    REQUIRE(board.getWQ() == 576460752303423492);
+
+    board = Board::from("8/7p/p5pb/4k3/P1pPn3/8/P5PP/1rB2RK1 b - d3 0 28");
+    REQUIRE(moves.pseudoLegalMovesB(board) == "20302636425223BE4423442544324436445244564463446527052716273627452754276327727101711171217131714171517161717071723423342434333443");
+    board = moves.makeMoveAll(board, "23BE");
+    REQUIRE(moves.unsafeForBlack(board) == 18224646162527297568U);
+
+    board = Board::from("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1");
+    board = moves.makeMoveAll(board, "65Qp");
+    REQUIRE(board.getWN() == 9223372036854775808U);
+    REQUIRE(board.getWQ() == 0);
+    REQUIRE(board.getBQ() == 2305843009213693952U);
+    REQUIRE(board.getWhiteToMove());
+
+    board = Board::from("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1");
+    board = moves.makeMoveAll(board, "67Qp");
+    REQUIRE(board.getWN() == 2305843009213693952U);
+
+    board = Board(134217728ULL, 0ULL, 0ULL, 16777216ULL, 0ULL, 1152921504606846976ULL, 1024ULL, 0ULL, 0ULL, 0ULL, 0ULL, 2147483648ULL, 0ULL, false, false, false, false, false);
+    board = moves.makeMoveAll(board, "1232");
+    REQUIRE(board.getWN() == 0);
+    REQUIRE(board.getWB() == 0);
+    REQUIRE(board.getWQ() == 0);
+    REQUIRE(board.getBN() == 0);
+    REQUIRE(board.getBB() == 0);
+    REQUIRE(board.getBR() == 0);
+    REQUIRE(board.getBQ() == 0);
+    REQUIRE(board.getEP() == 289360691352306692U);
 }

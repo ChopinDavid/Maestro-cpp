@@ -695,14 +695,14 @@ public:
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
-            moveList += (to_string(index % 8 + 1) + to_string(index % 8) + "WE");
+            moveList += (to_string(index % 8 + 1) + to_string(index % 8) + "BE");
         }
 
         possibility = (board.getBP() << 1) & board.getWP() & rank4 & ~fileA & board.getEP();
         if (possibility != 0)
         {
             int index = countTrailingZeros(possibility);
-            moveList += (to_string(index % 8 - 1) + to_string(index % 8) + "WE");
+            moveList += (to_string(index % 8 - 1) + to_string(index % 8) + "BE");
         }
 
         return moveList;
@@ -741,13 +741,17 @@ public:
                 {
                     span = knightSpan << y - 18;
                 }
-                if (y % 8 < 5)
+                if (y % 8 < 2 || (y < 8 && y < 2))
                 {
                     thisKnightsPossibilities |= (span & ~(filesGH));
                 }
-                else
+                else if (y % 8 > 5 || (y < 8 && y > 5))
                 {
                     thisKnightsPossibilities |= (span & ~(filesAB));
+                }
+                else
+                {
+                    thisKnightsPossibilities |= span;
                 }
                 thisKnightsPossibilities &= ~friendlyPieces;
                 string thisKnightsPossibilitiesBinary = convertBitboardToStringRep(thisKnightsPossibilities);
@@ -851,13 +855,16 @@ public:
     string possibleK(Board board)
     {
         uint64_t K;
+        uint64_t friendlyPieces;
         if (board.getWhiteToMove())
         {
             K = board.getWK();
+            friendlyPieces = board.whitePieces();
         }
         else
         {
             K = board.getBK();
+            friendlyPieces = board.blackPieces();
         }
         string movesList = "";
         uint64_t possibility;
@@ -872,11 +879,11 @@ public:
         }
         if (iLocation % 8 < 4)
         {
-            possibility &= ~filesGH & ~(board.whitePieces());
+            possibility &= ~filesGH & ~(friendlyPieces);
         }
         else
         {
-            possibility &= ~filesAB & ~(board.whitePieces());
+            possibility &= ~filesAB & ~(friendlyPieces);
         }
 
         if (board.getWhiteToMove())
@@ -1172,7 +1179,7 @@ public:
         return list;
     }
 
-    uint64_t makeMoveSinglePiece(Board board, uint64_t bitboard, string move)
+    uint64_t makeMoveSinglePiece(Board board, uint64_t bitboard, string move, char moveType)
     {
         if (isdigit(move[3]))
         { //'regular' move
@@ -1202,7 +1209,7 @@ public:
                 bitboard &= ~(1ULL << 0);
                 bitboard |= (1ULL << 3);
             }
-            else if ((board.getWhiteToMove() && bitboard == board.getEP() && ((1ULL << start) & board.getWP()) != 0 && move[0] == '6' && move[2] == '4') || (!board.getWhiteToMove() && bitboard == board.getEP() && ((1ULL << start) & board.getBP()) != 0 && move[0] == '1' && move[2] == '3'))
+            else if ((board.getWhiteToMove() && moveType == 'E' && ((1ULL << start) & board.getWP()) != 0 && move[0] == '6' && move[2] == '4') || (!board.getWhiteToMove() && moveType == 'E' && ((1ULL << start) & board.getBP()) != 0 && move[0] == '1' && move[2] == '3'))
             {
                 bitboard = fileMasks8[int(move[1]) - 48];
             }
@@ -1224,15 +1231,36 @@ public:
             {
                 start = countTrailingZeros(fileMasks8[int(move[0]) - 48] & rankMasks8[1]);
                 end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[0]);
+                if ((bitboard & (1ULL << end)) != 0)
+                {
+                    bitboard &= ~(1ULL << end);
+                }
+                if (bitboard == board.getWP())
+                {
+                    bitboard &= ~(1ULL << start);
+                }
+                if ((move[2] == 'Q' && moveType == 'Q') || (move[2] == 'R' && moveType == 'R') || (move[2] == 'B' && moveType == 'B') || (move[2] == 'N' && moveType == 'N'))
+                {
+                    bitboard |= (1ULL << end);
+                }
             }
             else
             {
                 start = countTrailingZeros(fileMasks8[int(move[0]) - 48] & rankMasks8[6]);
                 end = countTrailingZeros(fileMasks8[int(move[1]) - 48] & rankMasks8[7]);
+                if ((bitboard & (1ULL << end)) != 0)
+                {
+                    bitboard &= ~(1ULL << end);
+                }
+                if (bitboard == board.getBP())
+                {
+                    bitboard &= ~(1ULL << start);
+                }
+                if ((move[2] == 'Q' && moveType == 'q') || (move[2] == 'R' && moveType == 'r') || (move[2] == 'B' && moveType == 'b') || (move[2] == 'N' && moveType == 'n'))
+                {
+                    bitboard |= (1ULL << end);
+                }
             }
-
-            bitboard &= ~(1ULL << start);
-            bitboard |= (1ULL << end);
         }
         else if (move[3] == 'E')
         { //en passant
@@ -1265,19 +1293,19 @@ public:
 
     Board makeMoveAll(Board board, string move)
     {
-        uint64_t tWP = makeMoveSinglePiece(board, board.getWP(), move);
-        uint64_t tWN = makeMoveSinglePiece(board, board.getWN(), move);
-        uint64_t tWB = makeMoveSinglePiece(board, board.getWB(), move);
-        uint64_t tWR = makeMoveSinglePiece(board, board.getWR(), move);
-        uint64_t tWQ = makeMoveSinglePiece(board, board.getWQ(), move);
-        uint64_t tWK = makeMoveSinglePiece(board, board.getWK(), move);
-        uint64_t tBP = makeMoveSinglePiece(board, board.getBP(), move);
-        uint64_t tBN = makeMoveSinglePiece(board, board.getBN(), move);
-        uint64_t tBB = makeMoveSinglePiece(board, board.getBB(), move);
-        uint64_t tBR = makeMoveSinglePiece(board, board.getBR(), move);
-        uint64_t tBQ = makeMoveSinglePiece(board, board.getBQ(), move);
-        uint64_t tBK = makeMoveSinglePiece(board, board.getBK(), move);
-        uint64_t tEP = makeMoveSinglePiece(board, board.getEP(), move);
+        uint64_t tWP = makeMoveSinglePiece(board, board.getWP(), move, 'P');
+        uint64_t tWN = makeMoveSinglePiece(board, board.getWN(), move, 'N');
+        uint64_t tWB = makeMoveSinglePiece(board, board.getWB(), move, 'B');
+        uint64_t tWR = makeMoveSinglePiece(board, board.getWR(), move, 'R');
+        uint64_t tWQ = makeMoveSinglePiece(board, board.getWQ(), move, 'Q');
+        uint64_t tWK = makeMoveSinglePiece(board, board.getWK(), move, 'K');
+        uint64_t tBP = makeMoveSinglePiece(board, board.getBP(), move, 'p');
+        uint64_t tBN = makeMoveSinglePiece(board, board.getBN(), move, 'n');
+        uint64_t tBB = makeMoveSinglePiece(board, board.getBB(), move, 'b');
+        uint64_t tBR = makeMoveSinglePiece(board, board.getBR(), move, 'r');
+        uint64_t tBQ = makeMoveSinglePiece(board, board.getBQ(), move, 'q');
+        uint64_t tBK = makeMoveSinglePiece(board, board.getBK(), move, 'k');
+        uint64_t tEP = makeMoveSinglePiece(board, board.getEP(), move, 'E');
 
         bool tWhiteToMove = !board.getWhiteToMove();
         bool tCWK = true;
@@ -1285,22 +1313,25 @@ public:
         bool tCBK = true;
         bool tCBQ = true;
 
-        if (!board.getCWK() || tWK != 1152921504606846976 || (tWR & 9223372036854775808U) == 0) {
+        if (!board.getCWK() || tWK != 1152921504606846976 || (tWR & 9223372036854775808U) == 0)
+        {
             tCWK = false;
         }
 
-        if (!board.getCWQ() || tWK != 1152921504606846976 || (tWR & 72057594037927936) == 0) {
+        if (!board.getCWQ() || tWK != 1152921504606846976 || (tWR & 72057594037927936) == 0)
+        {
             tCWQ = false;
         }
 
-        if (!board.getCBK() || tBK != 16 || (tBR & 128) == 0) {
+        if (!board.getCBK() || tBK != 16 || (tBR & 128) == 0)
+        {
             tCBK = false;
         }
 
-        if (!board.getCBQ() || tBK != 16 || (tBR & 1) == 0) {
+        if (!board.getCBQ() || tBK != 16 || (tBR & 1) == 0)
+        {
             tCBQ = false;
         }
-
 
         Board newBoard = Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
         return newBoard;
