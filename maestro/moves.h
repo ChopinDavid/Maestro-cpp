@@ -915,18 +915,17 @@ public:
 
     string possibleCW(Board board)
     {
-        uint64_t occupiedSquares = board.occupied();
         string movesList = "";
+        uint64_t occupiedSquares = board.occupied();
         uint64_t unsafe = unsafeForWhite(board);
+        uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
 
         bool inCheck = (unsafe & board.getWK()) != 0;
         if (!inCheck)
         {
             if (board.getCWK() && (((1ULL << castleRooks[0]) & board.getWR()) != 0))
             {
-                uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
-                uint64_t kingSideBishopAndKnight = ((1ULL << 61) | (1ULL << 62));
-                bool shortCastleLegal = (occupiedAndUnsafeSquares & kingSideBishopAndKnight) == 0;
+                bool shortCastleLegal = (occupiedAndUnsafeSquares & 6917529027641081856ULL) == 0;
                 if (shortCastleLegal)
                 {
                     movesList += "7476";
@@ -935,10 +934,7 @@ public:
 
             if (board.getCWQ() && (((1ULL << castleRooks[1]) & board.getWR()) != 0))
             {
-                uint64_t knight = (1ULL << 57);
-                uint64_t bishop = (1ULL << 58);
-                uint64_t queen = (1ULL << 59);
-                bool longCastleLegal = ((occupiedSquares | (unsafe & ~knight)) & (knight | bishop | queen)) == 0;
+                bool longCastleLegal = ((unsafe & 864691128455135232ULL) == 0) && ((occupiedSquares & 1008806316530991104ULL) == 0) ;
                 if (longCastleLegal)
                 {
                     movesList += "7472";
@@ -951,18 +947,17 @@ public:
 
     string possibleCB(Board board)
     {
-        uint64_t occupiedSquares = board.occupied();
         string movesList = "";
+        uint64_t occupiedSquares = board.occupied();
         uint64_t unsafe = unsafeForBlack(board);
+        uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
 
         bool inCheck = (unsafe & board.getBK()) != 0;
         if (!inCheck)
         {
             if (board.getCBK() && (((1ULL << castleRooks[2]) & board.getBR()) != 0))
             {
-                uint64_t occupiedAndUnsafeSquares = (occupiedSquares | unsafe);
-                uint64_t kingSideBishopAndKnight = ((1ULL << 5) | (1ULL << 6));
-                bool shortCastleLegal = (occupiedAndUnsafeSquares & kingSideBishopAndKnight) == 0;
+                bool shortCastleLegal = (occupiedAndUnsafeSquares & 96ULL) == 0;
                 if (shortCastleLegal)
                 {
                     movesList += "0406";
@@ -970,10 +965,7 @@ public:
             }
             if (board.getCBQ() && (((1ULL << castleRooks[3]) & board.getBR()) != 0))
             {
-                uint16_t knight = (1ULL << 1);
-                uint64_t bishop = (1ULL << 2);
-                uint64_t queen = (1ULL << 3);
-                bool longCastleLegal = ((occupiedSquares | (unsafe & ~knight)) & (knight | bishop | queen)) == 0;
+                bool longCastleLegal = ((unsafe & 12ULL) == 0) && ((occupiedSquares & 14ULL) == 0);
                 if (longCastleLegal)
                 {
                     movesList += "0402";
@@ -997,7 +989,6 @@ public:
         //knight
         uint64_t knightCaptures = 0;
         string binaryN = convertBitboardToStringRep(board.getBN());
-
         for (int i = 0; i < strlen(binaryN.c_str()); i++)
         {
             char character = binaryN[i];
@@ -1013,17 +1004,22 @@ public:
                 {
                     span = knightSpan << i - 18;
                 }
-                if (i % 8 < 5)
+                if (i % 8 < 2)
                 {
                     thisKnightsPossibilities |= (span & ~(filesGH));
                 }
-                else
+                else if (i % 8 > 5)
                 {
                     thisKnightsPossibilities |= (span & ~(filesAB));
+                }
+                else
+                {
+                    thisKnightsPossibilities |= span;
                 }
                 unsafe |= thisKnightsPossibilities;
             }
         }
+
         //bishop/queen
         uint64_t bishopQueenCaptures = 0;
         uint64_t QB = board.getBQ() | board.getBB();
@@ -1038,6 +1034,7 @@ public:
             }
         }
         unsafe |= bishopQueenCaptures;
+
         //rook/queen
         uint64_t rookQueenCaptures = 0;
         uint64_t QR = board.getBQ() | board.getBR();
@@ -1052,6 +1049,7 @@ public:
             }
         }
         unsafe |= rookQueenCaptures;
+
         //king
         uint64_t kingCaptures = 0;
         int iLocation = countTrailingZeros(board.getBK());
@@ -1072,6 +1070,7 @@ public:
             kingCaptures &= ~filesAB;
         }
         unsafe |= kingCaptures;
+
         return unsafe;
     }
 
@@ -1105,13 +1104,17 @@ public:
                 {
                     span = knightSpan << i - 18;
                 }
-                if (i % 8 < 5)
+                if (i % 8 < 2 || (i < 8 && i < 2))
                 {
                     thisKnightsPossibilities |= (span & ~(filesGH));
                 }
-                else
+                else if (i % 8 > 5 || (i < 8 && i > 5))
                 {
                     thisKnightsPossibilities |= (span & ~(filesAB));
+                }
+                else
+                {
+                    thisKnightsPossibilities |= span;
                 }
                 unsafe |= thisKnightsPossibilities;
             }
@@ -1181,29 +1184,33 @@ public:
 
     uint64_t makeMoveSinglePiece(Board board, uint64_t bitboard, string move, char moveType)
     {
+        if (moveType == 'E')
+        {
+            bitboard = 0ULL;
+        }
         if (isdigit(move[3]))
         { //'regular' move
             int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
             int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
-            if (move == "7476" && ((1ULL << start) & board.getWK()) != 0 && bitboard == board.getWR())
+            if (move == "7476" && ((1ULL << start) & board.getWK()) != 0 && moveType == 'R')
             {
                 //Short white castle
                 bitboard &= ~(1ULL << 63);
                 bitboard |= (1ULL << 61);
             }
-            else if (move == "7472" && ((1ULL << start) & board.getWK()) != 0 && bitboard == board.getWR())
+            else if (move == "7472" && ((1ULL << start) & board.getWK()) != 0 && moveType == 'R')
             {
                 //Long white castle
                 bitboard &= ~(1ULL << 56);
                 bitboard |= (1ULL << 59);
             }
-            else if (move == "0406" && ((1ULL << start) & board.getBK()) != 0 && bitboard == board.getBR())
+            else if (move == "0406" && ((1ULL << start) & board.getBK()) != 0 && moveType == 'r')
             {
                 //Short black castle
                 bitboard &= ~(1ULL << 7);
                 bitboard |= (1ULL << 5);
             }
-            else if (move == "0402" && ((1ULL << start) & board.getBK()) != 0 && bitboard == board.getBR())
+            else if (move == "0402" && ((1ULL << start) & board.getBK()) != 0 && moveType == 'r')
             {
                 //Long black castle
                 bitboard &= ~(1ULL << 0);
@@ -1235,7 +1242,7 @@ public:
                 {
                     bitboard &= ~(1ULL << end);
                 }
-                if (bitboard == board.getWP())
+                if (moveType == 'P')
                 {
                     bitboard &= ~(1ULL << start);
                 }
@@ -1252,7 +1259,7 @@ public:
                 {
                     bitboard &= ~(1ULL << end);
                 }
-                if (bitboard == board.getBP())
+                if (moveType == 'p')
                 {
                     bitboard &= ~(1ULL << start);
                 }
@@ -1406,6 +1413,293 @@ public:
     int convertUint64ToIndex(uint64_t n)
     {
         return log(n) / log(2);
+    }
+
+    string convertMoveToAlgebra(string move, Board board)
+    {
+        int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
+        int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
+        string outputString = "";
+        if (isdigit(move[3]))
+        {
+            switch (move[1])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+
+            switch (move[0])
+            {
+            case '0':
+                outputString += '8';
+                break;
+            case '1':
+                outputString += '7';
+                break;
+            case '2':
+                outputString += '6';
+                break;
+            case '3':
+                outputString += '5';
+                break;
+            case '4':
+                outputString += '4';
+                break;
+            case '5':
+                outputString += '3';
+                break;
+            case '6':
+                outputString += '2';
+                break;
+            case '7':
+                outputString += '1';
+                break;
+            }
+
+            if ((board.getWhiteToMove() && ((1ULL << end) & board.blackPieces()) != 0) || (!board.getWhiteToMove() && ((1ULL << end) & board.whitePieces()) != 0))
+            {
+                outputString += 'x';
+            }
+            else
+            {
+                outputString += "→";
+            }
+
+            switch (move[3])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+
+            switch (move[2])
+            {
+            case '0':
+                outputString += '8';
+                break;
+            case '1':
+                outputString += '7';
+                break;
+            case '2':
+                outputString += '6';
+                break;
+            case '3':
+                outputString += '5';
+                break;
+            case '4':
+                outputString += '4';
+                break;
+            case '5':
+                outputString += '3';
+                break;
+            case '6':
+                outputString += '2';
+                break;
+            case '7':
+                outputString += '1';
+                break;
+            }
+        }
+        else if (tolower(move[3]) == 'p')
+        {
+            switch (move[0])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+            if (board.getWhiteToMove())
+            {
+                outputString += '7';
+            }
+            else
+            {
+                outputString += '2';
+            }
+            if (move[0] == move[1])
+            {
+                outputString += "→";
+                outputString += outputString[0];
+            }
+            else
+            {
+                outputString += 'x';
+                switch (move[1])
+                {
+                case '0':
+                    outputString += 'a';
+                break;
+                case '1':
+                    outputString += 'b';
+                break;
+                case '2':
+                    outputString += 'c';
+                break;
+                case '3':
+                    outputString += 'd';
+                break;
+                case '4':
+                    outputString += 'e';
+                break;
+                case '5':
+                    outputString += 'f';
+                break;
+                case '6':
+                    outputString += 'g';
+                break;
+                case '7':
+                    outputString += 'h';
+                break;
+                }
+            }
+            if (board.getWhiteToMove())
+            {
+                outputString += '8';
+            }
+            else
+            {
+                outputString += '1';
+            }
+            outputString += move[2];
+        }
+        else if (move[3] == 'E')
+        {
+            switch (move[0])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+            if (board.getWhiteToMove())
+            {
+                outputString += "5x";
+            }
+            else
+            {
+                outputString += "4x";
+            }
+            switch (move[1])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+            if (board.getWhiteToMove())
+            {
+                outputString += '6';
+            }
+            else
+            {
+                outputString += '3';
+            }
+        }
+        return outputString;
     }
 };
 

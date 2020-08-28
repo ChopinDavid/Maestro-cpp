@@ -89,15 +89,52 @@ public:
                 singleMoveString += possibleMoves[i + j];
             }
             Board tBoard = moves.makeMoveAll(board, singleMoveString);
-            uint64_t unsafe = moves.unsafeForBlack(tBoard);
-            if (!((!tBoard.getWhiteToMove() && (moves.unsafeForWhite(tBoard) & tBoard.getWK()) != 0) || (tBoard.getWhiteToMove() && (moves.unsafeForBlack(tBoard) & tBoard.getBK()) != 0)))
+            uint64_t unsafe;
+            if (tBoard.getWhiteToMove())
+            {
+                unsafe = moves.unsafeForWhite(tBoard);
+            }
+            else
+            {
+                unsafe = moves.unsafeForBlack(tBoard);
+            }
+
+            bool a = tBoard.getWhiteToMove();
+            uint64_t b = moves.unsafeForWhite(tBoard);
+            uint64_t c = tBoard.getWK();
+            uint64_t d = moves.unsafeForBlack(tBoard);
+            uint64_t e = tBoard.getBK();
+            if (!((!a && (b & c) != 0) || (a && (d & e) != 0)))
             {
                 nodes += perft(tBoard, depth - 1);
-            } else {
-                cout << "aa" << endl;
             }
         }
         return nodes;
+    }
+
+    void divide(Board board, int depth)
+    {
+        string movesString;
+        if (board.getWhiteToMove())
+        {
+            movesString = moves.pseudoLegalMovesW(board);
+        }
+        else
+        {
+            movesString = moves.pseudoLegalMovesB(board);
+        }
+
+        for (int i = 0; i < movesString.length(); i += 4)
+        {
+            string moveString = "";
+            moveString += movesString[i];
+            moveString += movesString[i + 1];
+            moveString += movesString[i + 2];
+            moveString += movesString[i + 3];
+            Board tBoard = moves.makeMoveAll(board, moveString);
+            int movesCount = perft(tBoard, depth);
+            cout << moves.convertMoveToAlgebra(moveString, board) << " " << movesCount << endl;
+        }
     }
 };
 

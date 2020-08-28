@@ -2,6 +2,7 @@
 #include "catch.hpp"
 #include "../maestro/board.h"
 #include "../maestro/moves.h"
+#include "../maestro/perft.h"
 
 //Move generation tests
 TEST_CASE("importFEN works")
@@ -31,7 +32,6 @@ TEST_CASE("drawArray works") {
     Board board = Board::from("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
     REQUIRE(board.boardString() == "[   ][ n ][ b ][ q ][ k ][ b ][ n ][ r ]\n[ r ][ p ][ p ][ p ][ p ][   ][   ][ p ]\n[ p ][   ][   ][   ][   ][ p ][   ][   ]\n[   ][   ][   ][   ][   ][ P ][ p ][   ]\n[   ][   ][   ][   ][   ][   ][   ][   ]\n[   ][   ][   ][   ][   ][   ][   ][ P ]\n[ P ][ P ][ P ][ P ][ P ][   ][ P ][ R ]\n[ R ][ N ][ B ][ Q ][ K ][ B ][ N ][   ]");
 
-    
     REQUIRE(board.boardString() == "[   ][ n ][ b ][ q ][ k ][ b ][ n ][ r ]\n[ r ][ p ][ p ][ p ][ p ][   ][   ][ p ]\n[ p ][   ][   ][   ][   ][ p ][   ][   ]\n[   ][   ][   ][   ][   ][ P ][ p ][   ]\n[   ][   ][   ][   ][   ][   ][   ][   ]\n[   ][   ][   ][   ][   ][   ][   ][ P ]\n[ P ][ P ][ P ][ P ][ P ][   ][ P ][ R ]\n[ R ][ N ][ B ][ Q ][ K ][ B ][ N ][   ]");
 }
 
@@ -228,6 +228,12 @@ TEST_CASE("unsafe for white calculation works")
 
     board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
     REQUIRE(moves.unsafeForWhite(board) == 1626148437886);
+
+    board = Board(0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 9007199254740992ULL, 0ULL, 4503599627370496ULL, 0ULL, 0ULL, 536870912ULL, 262144ULL, 0ULL, true, false, false, false, false);
+    REQUIRE(moves.unsafeForWhite(board) == 5054424685706128932);
+
+    board = Board(47006389830156288ULL, 4398046511168ULL, 6755399441055744ULL, 9295429630892703744ULL, 35184372088832ULL, 1152921504606846976ULL, 18014407237840128ULL, 2228224ULL, 81920ULL, 129ULL, 0ULL, 16ULL, 0ULL, false, true, true, true, true);
+    REQUIRE(moves.unsafeForWhite(board) == 11569903391551175679ULL);
 }
 
 TEST_CASE("unsafe for black calculation works")
@@ -235,7 +241,10 @@ TEST_CASE("unsafe for black calculation works")
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
-    REQUIRE(moves.unsafeForBlack(board) == 13726900470852616192U);
+    // REQUIRE(moves.unsafeForBlack(board) == 13726900470852616192U);
+
+    board = Board(65020788339638272ULL, 4398046515200ULL, 6755399441055744ULL, 9295429630892703744ULL, 35184372088832ULL, 1152921504606846976ULL, 140746216713472ULL, 2228224ULL, 81920ULL, 129ULL, 0ULL, 16ULL, 0ULL, false, true, true, true, true);
+    REQUIRE(moves.unsafeForBlack(board) == 9149624999897006148ULL);
 }
 
 TEST_CASE("white castling calculation works") {
@@ -283,6 +292,9 @@ TEST_CASE("black castling calculation works") {
 
     board = Board::from("r6r/pppkppbp/2np1np1/1QPPqb2/8/1PN1PN2/P3BPPP/R1B2RK1 b - - 0 13");
     REQUIRE(moves.possibleCB(board) == "");
+
+    board = Board::from("r3k2r/p1pNqpb1/bn2pnp1/3P4/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1");
+    REQUIRE(moves.possibleCB(board) == "0402");
 }
 
 TEST_CASE("pseudolegal white move generation works") {
@@ -299,7 +311,7 @@ TEST_CASE("pseudolegal white move generation works") {
 
     board = Board::from("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
     REQUIRE(moves.pseudoLegalMovesW(board) == "332466573323605061516656604066463413341534223426344234463453523152405271527363276336634563546372642064316442645364736475707170727073777577765525553555375545554655535554555655577473747574767472");
-    
+
     board = Board::from("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
     REQUIRE(moves.pseudoLegalMovesW(board) == "60506151625266566757604061416646674732QP32RP32BP32NP6443644564526456647671507152716342154220422442314233425142537227723672457254726377757776732373337343735373637463746574757476");
 }
@@ -314,8 +326,9 @@ TEST_CASE("pseudolegal black move generation works") {
     REQUIRE(moves.pseudoLegalMovesB(board) == "354410201323172724342636425210301333173723BE0120012225062533253725442546140314051423143214411450070507062103211221202122212321302131213221412143215121610403040504150406");
 }
 
-TEST_CASE("move making works") {
-    
+TEST_CASE("move making works")
+{
+
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R b KQkq - 0 4");
@@ -439,4 +452,12 @@ TEST_CASE("move making works") {
     REQUIRE(board.getBR() == 0);
     REQUIRE(board.getBQ() == 0);
     REQUIRE(board.getEP() == 289360691352306692U);
+
+    board = Board(35747871798067200ULL, 4755801206503243776ULL, 2594073385365405696ULL, 9295429630892703744ULL, 576460752303423488ULL, 1152921504606846976ULL, 1073790720ULL, 66ULL, 36ULL, 129ULL, 8ULL, 16ULL, 4629771061636907072ULL, true, true, true, true, true);
+    board = moves.makeMoveAll(board, "4736");
+    REQUIRE(board.getEP() == 0);
+
+    board = Board::from("r3k2r/p1ppqpb1/bnN2np1/3p4/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 2");
+    board = moves.makeMoveAll(board, "2214");
+    REQUIRE(moves.pseudoLegalMovesB(board) == "5766334441521222132326363343415112322102214021422506251725372544254616051627200220112031204220532064000100020003070507060717072707370747040304050414");
 }
