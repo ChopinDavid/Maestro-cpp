@@ -8,8 +8,7 @@ using namespace std;
 int main()
 {
     Perft &perft = Perft::getInstance();
-    Board board = Board::from("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
-    int a = perft.perft(board, 5);
-    cout << a << endl;
+    Board board = Board::from("r1b2rk1/ppppqpp1/2n2n1p/2b1p3/2B1P3/2NPBN2/PPPQ1PPP/R3K2R w KQ - 4 8");
+    perft.divide(board, 2);
     return 0;
 }

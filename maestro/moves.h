@@ -934,7 +934,7 @@ public:
 
             if (board.getCWQ() && (((1ULL << castleRooks[1]) & board.getWR()) != 0))
             {
-                bool longCastleLegal = ((unsafe & 864691128455135232ULL) == 0) && ((occupiedSquares & 1008806316530991104ULL) == 0) ;
+                bool longCastleLegal = ((unsafe & 864691128455135232ULL) == 0) && ((occupiedSquares & 1008806316530991104ULL) == 0);
                 if (longCastleLegal)
                 {
                     movesList += "7472";
@@ -1168,6 +1168,27 @@ public:
         }
         unsafe |= kingCaptures;
         return unsafe;
+    }
+
+    bool isInCheck(Board board)
+    {
+        uint64_t unsafe;
+        if (board.getWhiteToMove()) {
+            unsafe = unsafeForWhite(board);
+        } else {
+            unsafe = unsafeForBlack(board);
+        }
+
+        bool whiteIsInCheck = board.getWhiteToMove() && (board.getWK() & unsafeForWhite(board)) != 0;
+        bool blackIsInCheck = !board.getWhiteToMove() && (board.getBK() & unsafeForBlack(board)) != 0;
+        if (whiteIsInCheck || blackIsInCheck)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     string pseudoLegalMovesW(Board board)
@@ -1417,9 +1438,36 @@ public:
 
     string convertMoveToAlgebra(string move, Board board)
     {
+        //Get start and end bitboards
         int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
         int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
+
+        //Check if move is castle
+        if ((move == "0406" && board.getCBK()) || move == "7476" && board.getCWK()) {
+            return "O-O";
+        }
+        if ((move == "0402" && board.getCBQ()) || move == "7472" && board.getCWQ()) {
+            return "O-O-O";
+        }
+
         string outputString = "";
+
+        if (((1ULL << start) & board.getWN()) != 0 || ((1ULL << start) & board.getBN()) != 0) {
+            outputString += 'N';
+        }
+        if (((1ULL << start) & board.getWB()) != 0 || ((1ULL << start) & board.getBB()) != 0) {
+            outputString += 'B';
+        }
+        if (((1ULL << start) & board.getWR()) != 0 || ((1ULL << start) & board.getBR()) != 0) {
+            outputString += 'R';
+        }
+        if (((1ULL << start) & board.getWQ()) != 0 || ((1ULL << start) & board.getBQ()) != 0) {
+            outputString += 'Q';
+        }
+        if (((1ULL << start) & board.getWK()) != 0 || ((1ULL << start) & board.getBK()) != 0) {
+            outputString += 'K';
+        }
+        
         if (isdigit(move[3]))
         {
             switch (move[1])
@@ -1484,7 +1532,7 @@ public:
             }
             else
             {
-                outputString += "→";
+                outputString += "-";
             }
 
             switch (move[3])
@@ -1582,7 +1630,7 @@ public:
             }
             if (move[0] == move[1])
             {
-                outputString += "→";
+                outputString += "-";
                 outputString += outputString[0];
             }
             else
@@ -1592,28 +1640,28 @@ public:
                 {
                 case '0':
                     outputString += 'a';
-                break;
+                    break;
                 case '1':
                     outputString += 'b';
-                break;
+                    break;
                 case '2':
                     outputString += 'c';
-                break;
+                    break;
                 case '3':
                     outputString += 'd';
-                break;
+                    break;
                 case '4':
                     outputString += 'e';
-                break;
+                    break;
                 case '5':
                     outputString += 'f';
-                break;
+                    break;
                 case '6':
                     outputString += 'g';
-                break;
+                    break;
                 case '7':
                     outputString += 'h';
-                break;
+                    break;
                 }
             }
             if (board.getWhiteToMove())
@@ -1699,6 +1747,13 @@ public:
                 outputString += '3';
             }
         }
+
+        Board tBoard = makeMoveAll(board, move);
+
+        if (isInCheck(tBoard)) {
+            outputString += '+';
+        }
+
         return outputString;
     }
 };
