@@ -28,7 +28,8 @@ TEST_CASE("importFEN works")
     REQUIRE(board.getCBQ() == false);
 }
 
-TEST_CASE("drawArray works") {
+TEST_CASE("drawArray works")
+{
     Board board = Board::from("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
     REQUIRE(board.boardString() == "[   ][ n ][ b ][ q ][ k ][ b ][ n ][ r ]\n[ r ][ p ][ p ][ p ][ p ][   ][   ][ p ]\n[ p ][   ][   ][   ][   ][ p ][   ][   ]\n[   ][   ][   ][   ][   ][ P ][ p ][   ]\n[   ][   ][   ][   ][   ][   ][   ][   ]\n[   ][   ][   ][   ][   ][   ][   ][ P ]\n[ P ][ P ][ P ][ P ][ P ][   ][ P ][ R ]\n[ R ][ N ][ B ][ Q ][ K ][ B ][ N ][   ]");
 
@@ -229,10 +230,10 @@ TEST_CASE("unsafe for white calculation works")
     board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
     REQUIRE(moves.unsafeForWhite(board) == 1626148437886);
 
-    board = Board(0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 9007199254740992ULL, 0ULL, 4503599627370496ULL, 0ULL, 0ULL, 536870912ULL, 262144ULL, 0ULL, true, false, false, false, false);
+    board = Board(0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 9007199254740992ULL, 0ULL, 4503599627370496ULL, 0ULL, 0ULL, 536870912ULL, 262144ULL, 0ULL, 0, 1, true, false, false, false, false);
     REQUIRE(moves.unsafeForWhite(board) == 5054424685706128932);
 
-    board = Board(47006389830156288ULL, 4398046511168ULL, 6755399441055744ULL, 9295429630892703744ULL, 35184372088832ULL, 1152921504606846976ULL, 18014407237840128ULL, 2228224ULL, 81920ULL, 129ULL, 0ULL, 16ULL, 0ULL, false, true, true, true, true);
+    board = Board(47006389830156288ULL, 4398046511168ULL, 6755399441055744ULL, 9295429630892703744ULL, 35184372088832ULL, 1152921504606846976ULL, 18014407237840128ULL, 2228224ULL, 81920ULL, 129ULL, 0ULL, 16ULL, 0ULL, 0, 1, false, true, true, true, true);
     REQUIRE(moves.unsafeForWhite(board) == 11569903391551175679ULL);
 }
 
@@ -243,11 +244,12 @@ TEST_CASE("unsafe for black calculation works")
     Board board = Board::from("1nbqkbnr/rpppp2p/p4p2/5Pp1/8/7P/PPPPP1PR/RNBQKBN1 w Qk g6 0 5");
     // REQUIRE(moves.unsafeForBlack(board) == 13726900470852616192U);
 
-    board = Board(65020788339638272ULL, 4398046515200ULL, 6755399441055744ULL, 9295429630892703744ULL, 35184372088832ULL, 1152921504606846976ULL, 140746216713472ULL, 2228224ULL, 81920ULL, 129ULL, 0ULL, 16ULL, 0ULL, false, true, true, true, true);
+    board = Board(65020788339638272ULL, 4398046515200ULL, 6755399441055744ULL, 9295429630892703744ULL, 35184372088832ULL, 1152921504606846976ULL, 140746216713472ULL, 2228224ULL, 81920ULL, 129ULL, 0ULL, 16ULL, 0ULL, 0, 1, false, true, true, true, true);
     REQUIRE(moves.unsafeForBlack(board) == 9149624999897006148ULL);
 }
 
-TEST_CASE("white castling calculation works") {
+TEST_CASE("white castling calculation works")
+{
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
@@ -269,7 +271,8 @@ TEST_CASE("white castling calculation works") {
     REQUIRE(moves.possibleCW(board) == "");
 }
 
-TEST_CASE("black castling calculation works") {
+TEST_CASE("black castling calculation works")
+{
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("rnbqk2r/ppppppbp/5np1/8/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 3 4");
@@ -297,7 +300,8 @@ TEST_CASE("black castling calculation works") {
     REQUIRE(moves.possibleCB(board) == "0402");
 }
 
-TEST_CASE("pseudolegal white move generation works") {
+TEST_CASE("pseudolegal white move generation works")
+{
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
@@ -316,7 +320,8 @@ TEST_CASE("pseudolegal white move generation works") {
     REQUIRE(moves.pseudoLegalMovesW(board) == "60506151625266566757604061416646674732QP32RP32BP32NP6443644564526456647671507152716342154220422442314233425142537227723672457254726377757776732373337343735373637463746574757476");
 }
 
-TEST_CASE("pseudolegal black move generation works") {
+TEST_CASE("pseudolegal black move generation works")
+{
     Moves &moves = Moves::getInstance();
 
     Board board = Board::from("rnb2rk1/p5bp/2pn1q2/1p3ppN/3P4/2NB1P2/PPQ2BPP/R3R1K1 b - - 1 19");
@@ -442,7 +447,7 @@ TEST_CASE("move making works")
     board = moves.makeMoveAll(board, "67Qp");
     REQUIRE(board.getWN() == 2305843009213693952U);
 
-    board = Board(134217728ULL, 0ULL, 0ULL, 16777216ULL, 0ULL, 1152921504606846976ULL, 1024ULL, 0ULL, 0ULL, 0ULL, 0ULL, 2147483648ULL, 0ULL, false, false, false, false, false);
+    board = Board(134217728ULL, 0ULL, 0ULL, 16777216ULL, 0ULL, 1152921504606846976ULL, 1024ULL, 0ULL, 0ULL, 0ULL, 0ULL, 2147483648ULL, 0ULL, 0, 1, false, false, false, false, false);
     board = moves.makeMoveAll(board, "1232");
     REQUIRE(board.getWN() == 0);
     REQUIRE(board.getWB() == 0);
@@ -453,11 +458,63 @@ TEST_CASE("move making works")
     REQUIRE(board.getBQ() == 0);
     REQUIRE(board.getEP() == 289360691352306692U);
 
-    board = Board(35747871798067200ULL, 4755801206503243776ULL, 2594073385365405696ULL, 9295429630892703744ULL, 576460752303423488ULL, 1152921504606846976ULL, 1073790720ULL, 66ULL, 36ULL, 129ULL, 8ULL, 16ULL, 4629771061636907072ULL, true, true, true, true, true);
+    board = Board(35747871798067200ULL, 4755801206503243776ULL, 2594073385365405696ULL, 9295429630892703744ULL, 576460752303423488ULL, 1152921504606846976ULL, 1073790720ULL, 66ULL, 36ULL, 129ULL, 8ULL, 16ULL, 4629771061636907072ULL, 0, 1, true, true, true, true, true);
     board = moves.makeMoveAll(board, "4736");
     REQUIRE(board.getEP() == 0);
 
     board = Board::from("r3k2r/p1ppqpb1/bnN2np1/3p4/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 2");
     board = moves.makeMoveAll(board, "2214");
     REQUIRE(moves.pseudoLegalMovesB(board) == "5766334441521222132326363343415112322102214021422506251725372544254616051627200220112031204220532064000100020003070507060717072707370747040304050414");
+}
+
+TEST_CASE("Board to FEN works")
+{
+    Moves &moves = Moves::getInstance();
+    Board board = Board::from("rnbqkbnr/ppppp2p/5p2/6pP/8/8/PPPPPPP1/RNBQKBNR w KQkq g6 0 3");
+    REQUIRE(board.fen() == "rnbqkbnr/ppppp2p/5p2/6pP/8/8/PPPPPPP1/RNBQKBNR w KQkq g6 0 3");
+    board = moves.makeMoveAll(board, "76WE");
+    REQUIRE(board.fen() == "rnbqkbnr/ppppp2p/5pP1/8/8/8/PPPPPPP1/RNBQKBNR b KQkq - 0 3");
+}
+
+TEST_CASE("Move counter works")
+{
+    Moves &moves = Moves::getInstance();
+    Board board = Board::initiateStandardChess();
+    REQUIRE(board.getMoveNumber() == 1);
+    board = moves.makeMoveAll(board, "6444");
+    REQUIRE(board.getMoveNumber() == 1);
+    board = moves.makeMoveAll(board, "1434");
+    REQUIRE(board.getMoveNumber() == 2);
+}
+
+TEST_CASE("Half move clock works")
+{
+    Moves &moves = Moves::getInstance();
+    Board board = Board::initiateStandardChess();
+    REQUIRE(board.getHalfMoveClock() == 0);
+    board = moves.makeMoveAll(board, "6444");
+    REQUIRE(board.getHalfMoveClock() == 0);
+    board = moves.makeMoveAll(board, "1434");
+    REQUIRE(board.getHalfMoveClock() == 0);
+    board = moves.makeMoveAll(board, "7655");
+    REQUIRE(board.getHalfMoveClock() == 1);
+    board = moves.makeMoveAll(board, "0122");
+    REQUIRE(board.getHalfMoveClock() == 2);
+    board = moves.makeMoveAll(board, "5534");
+    REQUIRE(board.getHalfMoveClock() == 0);
+
+    board = Board::from("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    REQUIRE(board.getHalfMoveClock() == 4);
+    board = moves.makeMoveAll(board, "7476");
+    REQUIRE(board.getHalfMoveClock() == 5);
+
+    board = Board::from("rnbqkbnr/3pp1pp/ppp5/4PpP1/8/8/PPPP1P1P/RNBQKBNR w KQkq f6 0 5");
+    REQUIRE(board.fen() == "rnbqkbnr/3pp1pp/ppp5/4PpP1/8/8/PPPP1P1P/RNBQKBNR w KQkq f6 0 5");
+    board = moves.makeMoveAll(board, "65WE");
+    REQUIRE(board.fen() == "rnbqkbnr/3pp1pp/ppp2P2/4P3/8/8/PPPP1P1P/RNBQKBNR b KQkq - 0 5");
+
+    board = Board::from("1rbqkbnr/pp1p2Pp/n1p5/8/4P3/8/PPP2PPP/RNBQKBNR w KQk - 1 6");
+    REQUIRE(board.fen() == "1rbqkbnr/pp1p2Pp/n1p5/8/4P3/8/PPP2PPP/RNBQKBNR w KQk - 1 6");
+    board = moves.makeMoveAll(board, "67NP");
+    REQUIRE(board.fen() == "1rbqkbnN/pp1p3p/n1p5/8/4P3/8/PPP2PPP/RNBQKBNR b KQ - 0 6");
 }

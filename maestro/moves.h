@@ -1173,9 +1173,12 @@ public:
     bool isInCheck(Board board)
     {
         uint64_t unsafe;
-        if (board.getWhiteToMove()) {
+        if (board.getWhiteToMove())
+        {
             unsafe = unsafeForWhite(board);
-        } else {
+        }
+        else
+        {
             unsafe = unsafeForBlack(board);
         }
 
@@ -1319,6 +1322,40 @@ public:
         return bitboard;
     }
 
+    int getNewHalfMoveClock(Board board, string move)
+    {
+        if (!isdigit(move[3]))
+        {
+            return 0;
+        }
+        else
+        {
+            int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
+            int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
+
+            if (((1ULL << start) & board.getWP()) != 0 || ((1ULL << start) & board.getBP()) != 0 || ((1ULL << end) & board.occupied()) != 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return board.getHalfMoveClock() + 1;
+            }
+        }
+    }
+
+    int getNewMoveNumber(Board board, string move)
+    {
+        if (!board.getWhiteToMove())
+        {
+            return board.getMoveNumber() + 1;
+        }
+        else
+        {
+            return board.getMoveNumber();
+        }
+    }
+
     Board makeMoveAll(Board board, string move)
     {
         uint64_t tWP = makeMoveSinglePiece(board, board.getWP(), move, 'P');
@@ -1334,7 +1371,8 @@ public:
         uint64_t tBQ = makeMoveSinglePiece(board, board.getBQ(), move, 'q');
         uint64_t tBK = makeMoveSinglePiece(board, board.getBK(), move, 'k');
         uint64_t tEP = makeMoveSinglePiece(board, board.getEP(), move, 'E');
-
+        int tHalfMoveClock = getNewHalfMoveClock(board, move);
+        int tMoveNumber = getNewMoveNumber(board, move);
         bool tWhiteToMove = !board.getWhiteToMove();
         bool tCWK = true;
         bool tCWQ = true;
@@ -1361,7 +1399,7 @@ public:
             tCBQ = false;
         }
 
-        Board newBoard = Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
+        Board newBoard = Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tHalfMoveClock, tMoveNumber, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
         return newBoard;
     }
 
@@ -1443,31 +1481,38 @@ public:
         int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
 
         //Check if move is castle
-        if ((move == "0406" && board.getCBK()) || move == "7476" && board.getCWK()) {
+        if ((move == "0406" && board.getCBK()) || move == "7476" && board.getCWK())
+        {
             return "O-O";
         }
-        if ((move == "0402" && board.getCBQ()) || move == "7472" && board.getCWQ()) {
+        if ((move == "0402" && board.getCBQ()) || move == "7472" && board.getCWQ())
+        {
             return "O-O-O";
         }
 
         string outputString = "";
 
-        if (((1ULL << start) & board.getWN()) != 0 || ((1ULL << start) & board.getBN()) != 0) {
+        if (((1ULL << start) & board.getWN()) != 0 || ((1ULL << start) & board.getBN()) != 0)
+        {
             outputString += 'N';
         }
-        if (((1ULL << start) & board.getWB()) != 0 || ((1ULL << start) & board.getBB()) != 0) {
+        if (((1ULL << start) & board.getWB()) != 0 || ((1ULL << start) & board.getBB()) != 0)
+        {
             outputString += 'B';
         }
-        if (((1ULL << start) & board.getWR()) != 0 || ((1ULL << start) & board.getBR()) != 0) {
+        if (((1ULL << start) & board.getWR()) != 0 || ((1ULL << start) & board.getBR()) != 0)
+        {
             outputString += 'R';
         }
-        if (((1ULL << start) & board.getWQ()) != 0 || ((1ULL << start) & board.getBQ()) != 0) {
+        if (((1ULL << start) & board.getWQ()) != 0 || ((1ULL << start) & board.getBQ()) != 0)
+        {
             outputString += 'Q';
         }
-        if (((1ULL << start) & board.getWK()) != 0 || ((1ULL << start) & board.getBK()) != 0) {
+        if (((1ULL << start) & board.getWK()) != 0 || ((1ULL << start) & board.getBK()) != 0)
+        {
             outputString += 'K';
         }
-        
+
         if (isdigit(move[3]))
         {
             switch (move[1])
@@ -1750,10 +1795,290 @@ public:
 
         Board tBoard = makeMoveAll(board, move);
 
-        if (isInCheck(tBoard)) {
+        if (isInCheck(tBoard))
+        {
             outputString += '+';
         }
 
+        return outputString;
+    }
+
+    string convertMoveToAlgebraUCI(string move, Board board)
+    {
+        //Get start and end bitboards
+        int start = (int(move[0]) - 48) * 8 + (int(move[1]) - 48);
+        int end = (int(move[2]) - 48) * 8 + (int(move[3]) - 48);
+
+        string outputString = "";
+
+        if (isdigit(move[3]))
+        {
+            switch (move[1])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+
+            switch (move[0])
+            {
+            case '0':
+                outputString += '8';
+                break;
+            case '1':
+                outputString += '7';
+                break;
+            case '2':
+                outputString += '6';
+                break;
+            case '3':
+                outputString += '5';
+                break;
+            case '4':
+                outputString += '4';
+                break;
+            case '5':
+                outputString += '3';
+                break;
+            case '6':
+                outputString += '2';
+                break;
+            case '7':
+                outputString += '1';
+                break;
+            }
+
+            switch (move[3])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+
+            switch (move[2])
+            {
+            case '0':
+                outputString += '8';
+                break;
+            case '1':
+                outputString += '7';
+                break;
+            case '2':
+                outputString += '6';
+                break;
+            case '3':
+                outputString += '5';
+                break;
+            case '4':
+                outputString += '4';
+                break;
+            case '5':
+                outputString += '3';
+                break;
+            case '6':
+                outputString += '2';
+                break;
+            case '7':
+                outputString += '1';
+                break;
+            }
+        }
+        else if (tolower(move[3]) == 'p')
+        {
+            switch (move[0])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+            if (!board.getWhiteToMove())
+            {
+                outputString += '7';
+            }
+            else
+            {
+                outputString += '2';
+            }
+            if (move[0] == move[1])
+            {
+                outputString += outputString[0];
+            }
+            else
+            {
+                switch (move[1])
+                {
+                case '0':
+                    outputString += 'a';
+                    break;
+                case '1':
+                    outputString += 'b';
+                    break;
+                case '2':
+                    outputString += 'c';
+                    break;
+                case '3':
+                    outputString += 'd';
+                    break;
+                case '4':
+                    outputString += 'e';
+                    break;
+                case '5':
+                    outputString += 'f';
+                    break;
+                case '6':
+                    outputString += 'g';
+                    break;
+                case '7':
+                    outputString += 'h';
+                    break;
+                }
+            }
+            if (!board.getWhiteToMove())
+            {
+                outputString += '8';
+            }
+            else
+            {
+                outputString += '1';
+            }
+            outputString += tolower(move[2]);
+        }
+        else if (move[3] == 'E')
+        {
+            switch (move[0])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+            if (board.getWhiteToMove())
+            {
+                outputString += "5";
+            }
+            else
+            {
+                outputString += "4";
+            }
+            switch (move[1])
+            {
+            case '0':
+                outputString += 'a';
+                break;
+            case '1':
+                outputString += 'b';
+                break;
+            case '2':
+                outputString += 'c';
+                break;
+            case '3':
+                outputString += 'd';
+                break;
+            case '4':
+                outputString += 'e';
+                break;
+            case '5':
+                outputString += 'f';
+                break;
+            case '6':
+                outputString += 'g';
+                break;
+            case '7':
+                outputString += 'h';
+                break;
+            }
+            if (board.getWhiteToMove())
+            {
+                outputString += '6';
+            }
+            else
+            {
+                outputString += '3';
+            }
+        }
         return outputString;
     }
 };

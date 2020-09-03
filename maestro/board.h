@@ -23,6 +23,8 @@ private:
     uint64_t BQ;
     uint64_t BK;
     uint64_t EP;
+    int halfMoveClock;
+    int moveNumber;
     bool whiteToMove;
     bool CWK;
     bool CWQ;
@@ -30,13 +32,14 @@ private:
     bool CBQ;
 
 public:
-    Board(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, uint64_t EP, bool whiteToMove, bool CWK, bool CWQ, bool CBK, bool CBQ) : WP(WP), WN(WN), WB(WB), WR(WR), WQ(WQ), WK(WK), BP(BP), BN(BN), BB(BB), BR(BR), BQ(BQ), BK(BK), EP(EP), whiteToMove(whiteToMove), CWK(CWK), CWQ(CWQ), CBK(CBK), CBQ(CBQ) {};
+    Board(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, uint64_t EP, int halfMoveClock, int moveNumber, bool whiteToMove, bool CWK, bool CWQ, bool CBK, bool CBQ) : WP(WP), WN(WN), WB(WB), WR(WR), WQ(WQ), WK(WK), BP(BP), BN(BN), BB(BB), BR(BR), BQ(BQ), BK(BK), EP(EP), halfMoveClock(halfMoveClock), moveNumber(moveNumber), whiteToMove(whiteToMove), CWK(CWK), CWQ(CWQ), CBK(CBK), CBQ(CBQ){};
 
     static Board initiateStandardChess()
     {
-        return Board(71776119061217280U, 4755801206503243776U, 2594073385365405696U, 9295429630892703744U, 576460752303423488U, 1152921504606846976U, 65280U, 66U, 36U, 129U, 8U, 16U, 0ULL, true, true, true, true, true);
+        return Board(71776119061217280U, 4755801206503243776U, 2594073385365405696U, 9295429630892703744U, 576460752303423488U, 1152921504606846976U, 65280U, 66U, 36U, 129U, 8U, 16U, 0ULL, 0, 1, true, true, true, true, true);
     }
-    static Board from(string FEN) {
+    static Board from(string FEN)
+    {
         uint64_t tWP = 0;
         uint64_t tWN = 0;
         uint64_t tWB = 0;
@@ -50,7 +53,8 @@ public:
         uint64_t tBQ = 0;
         uint64_t tBK = 0;
         uint64_t tEP = 0;
-
+        int tHalfMoveClock = 0;
+        int tMoveNumber = 0;
         bool tWhiteToMove = false;
         bool tCWK = false;
         bool tCWQ = false;
@@ -173,80 +177,117 @@ public:
         if (FEN[charIndex] != '-')
         {
             tEP = fileMasks8[int(tolower(FEN[charIndex])) - 97];
+            charIndex += 3;
         }
+        else
+        {
+            charIndex += 2;
+        }
+        tHalfMoveClock = int(FEN[charIndex] - 48);
 
-        return Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
+        charIndex += 2;
+        tMoveNumber = int(FEN[charIndex] - 48);
+
+        return Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tHalfMoveClock, tMoveNumber, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
     }
 
-    uint64_t getWP() {
+    uint64_t getWP()
+    {
         return WP;
     }
 
-    uint64_t getWN() {
+    uint64_t getWN()
+    {
         return WN;
     }
 
-    uint64_t getWB() {
+    uint64_t getWB()
+    {
         return WB;
     }
 
-    uint64_t getWR() {
+    uint64_t getWR()
+    {
         return WR;
     }
 
-    uint64_t getWQ() {
+    uint64_t getWQ()
+    {
         return WQ;
     }
 
-    uint64_t getWK() {
+    uint64_t getWK()
+    {
         return WK;
     }
 
-    uint64_t getBP() {
+    uint64_t getBP()
+    {
         return BP;
     }
 
-    uint64_t getBN() {
+    uint64_t getBN()
+    {
         return BN;
     }
 
-    uint64_t getBB() {
+    uint64_t getBB()
+    {
         return BB;
     }
 
-    uint64_t getBR() {
+    uint64_t getBR()
+    {
         return BR;
     }
 
-    uint64_t getBQ() {
+    uint64_t getBQ()
+    {
         return BQ;
     }
 
-    uint64_t getBK() {
+    uint64_t getBK()
+    {
         return BK;
     }
 
-    uint64_t getEP() {
+    uint64_t getEP()
+    {
         return EP;
     }
 
-    bool getWhiteToMove() {
+    int getHalfMoveClock()
+    {
+        return halfMoveClock;
+    }
+
+    int getMoveNumber()
+    {
+        return moveNumber;
+    }
+
+    bool getWhiteToMove()
+    {
         return whiteToMove;
     }
 
-    bool getCWK() {
+    bool getCWK()
+    {
         return CWK;
     }
 
-    bool getCWQ() {
+    bool getCWQ()
+    {
         return CWQ;
     }
 
-    bool getCBK() {
+    bool getCBK()
+    {
         return CBK;
     }
 
-    bool getCBQ() {
+    bool getCBQ()
+    {
         return CBQ;
     }
 
@@ -346,6 +387,181 @@ public:
         }
 
         return boardString;
+    }
+
+    string fen()
+    {
+        std::string FEN;
+        int emptySquareCount = 0;
+
+        for (int i = 0; i < 64; i++)
+        {
+            uint64_t currentSquareBitboard = 1ULL << i;
+            if ((occupied() & currentSquareBitboard) == 0)
+            {
+                emptySquareCount++;
+                if (i % 8 == 7)
+                {
+                    FEN += char(emptySquareCount + 48);
+                    emptySquareCount = 0;
+                }
+            }
+            else
+            {
+                if (emptySquareCount != 0)
+                {
+                    FEN += char(emptySquareCount + 48);
+                    emptySquareCount = 0;
+                }
+            }
+
+            if ((currentSquareBitboard & WP) != 0)
+            {
+                FEN += 'P';
+            }
+            else if ((currentSquareBitboard & WN) != 0)
+            {
+                FEN += 'N';
+            }
+            else if ((currentSquareBitboard & WB) != 0)
+            {
+                FEN += 'B';
+            }
+            else if ((currentSquareBitboard & WR) != 0)
+            {
+                FEN += 'R';
+            }
+            else if ((currentSquareBitboard & WQ) != 0)
+            {
+                FEN += 'Q';
+            }
+            else if ((currentSquareBitboard & WK) != 0)
+            {
+                FEN += 'K';
+            }
+            else if ((currentSquareBitboard & BP) != 0)
+            {
+                FEN += 'p';
+            }
+            else if ((currentSquareBitboard & BN) != 0)
+            {
+                FEN += 'n';
+            }
+            else if ((currentSquareBitboard & BB) != 0)
+            {
+                FEN += 'b';
+            }
+            else if ((currentSquareBitboard & BR) != 0)
+            {
+                FEN += 'r';
+            }
+            else if ((currentSquareBitboard & BQ) != 0)
+            {
+                FEN += 'q';
+            }
+            else if ((currentSquareBitboard & BK) != 0)
+            {
+                FEN += 'k';
+            }
+
+            if (i % 8 == 7 && i != 63)
+            {
+                FEN += '/';
+            }
+        }
+
+        FEN += ' ';
+        if (whiteToMove)
+        {
+            FEN += 'w';
+        }
+        else
+        {
+            FEN += 'b';
+        }
+
+        FEN += ' ';
+        //  no castling available
+        if (!(CWK || CWQ || CBK || CBQ))
+        {
+            FEN += '-';
+        }
+        else
+        {
+            if (CWK)
+            {
+                FEN += 'K';
+            }
+            if (CWQ)
+            {
+                FEN += 'Q';
+            }
+            if (CBK)
+            {
+                FEN += 'k';
+            }
+            if (CBQ)
+            {
+                FEN += 'q';
+            }
+        }
+
+        FEN += ' ';
+        if (EP != 0)
+        {
+            uint64_t EPTargetSquareBitboard;
+            if (whiteToMove)
+            {
+                EPTargetSquareBitboard = EP & rank5;
+            }
+            else
+            {
+                EPTargetSquareBitboard = EP & rank4;
+            }
+            int EPTargetSquare = log(EPTargetSquareBitboard) / log(2);
+            int rank = EPTargetSquare % 8;
+            int file = EPTargetSquare / 8;
+            switch (rank)
+            {
+            case 0:
+                FEN += 'a';
+                break;
+            case 1:
+                FEN += 'b';
+                break;
+            case 2:
+                FEN += 'c';
+                break;
+            case 3:
+                FEN += 'd';
+                break;
+            case 4:
+                FEN += 'e';
+                break;
+            case 5:
+                FEN += 'f';
+                break;
+            case 6:
+                FEN += 'g';
+                break;
+            case 7:
+                FEN += 'h';
+                break;
+            }
+
+            whiteToMove ? FEN += '6' : FEN += '4';
+        }
+        else
+        {
+            FEN += '-';
+        }
+
+        FEN += ' ';
+        FEN += std::to_string(halfMoveClock);
+        FEN += ' ';
+        FEN += std::to_string(moveNumber);
+
+        return FEN;
     }
 };
 
