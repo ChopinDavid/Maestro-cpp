@@ -12,8 +12,6 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
-#include <bitset>
-#include <algorithm>
 using namespace std;
 
 class Moves
@@ -1460,13 +1458,6 @@ public:
             }
         }
         return movesList;
-    }
-
-    string convertBitboardToStringRep(uint64_t bitboard)
-    {
-        std::string s = std::bitset<64>(bitboard).to_string();
-        reverse(s.begin(), s.end());
-        return s;
     }
 
     int convertUint64ToIndex(uint64_t n)

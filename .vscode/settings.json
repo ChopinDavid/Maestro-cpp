@@ -74,5 +74,6 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "bitset": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

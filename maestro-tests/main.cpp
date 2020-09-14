@@ -3,6 +3,9 @@
 #include "../maestro/board.h"
 #include "../maestro/moves.h"
 #include "../maestro/perft.h"
+#include "../maestro/rating.h"
+#include "../maestro/phase.h"
+#include "../maestro/search.h"
 
 //Move generation tests
 TEST_CASE("importFEN works")
@@ -517,4 +520,49 @@ TEST_CASE("Half move clock works")
     REQUIRE(board.fen() == "1rbqkbnr/pp1p2Pp/n1p5/8/4P3/8/PPP2PPP/RNBQKBNR w KQk - 1 6");
     board = moves.makeMoveAll(board, "67NP");
     REQUIRE(board.fen() == "1rbqkbnN/pp1p3p/n1p5/8/4P3/8/PPP2PPP/RNBQKBNR b KQ - 0 6");
+}
+
+TEST_CASE("material rating works") {
+    Rating &rating = Rating::getInstance();
+    Board board = Board::initiateStandardChess();
+    REQUIRE(rating.getCentipawnValueWhite(board) == 4977);
+    REQUIRE(rating.getCentipawnValueBlack(board) == -4977);
+    REQUIRE(rating.getCentipawnValue(board) == 0);
+
+    board = Board::from("1k6/5P2/8/8/1P6/8/4P3/4K3 w - - 0 1");
+    REQUIRE(rating.getCentipawnValueWhite(board) == 300);
+}
+
+TEST_CASE("endgame calculation works") {
+    Moves &moves = Moves::getInstance();
+    Board board = Board::initiateStandardChess();
+    REQUIRE(board.getPhase() == OpeningMiddle);
+
+    board = Board::from("8/8/8/2k5/2p5/8/7r/R1K5 w - - 0 1");
+    REQUIRE(board.getPhase() == End);
+
+    board = Board::from("r2qkb1r/ppp2ppp/8/3p4/3QP3/8/PPP2PPP/R3KB1R w KQkq - 0 6");
+    REQUIRE(board.getPhase() == OpeningMiddle);
+    board = moves.makeMoveAll(board, "3344");
+    REQUIRE(board.getPhase() == OpeningMiddle);
+    board = moves.makeMoveAll(board, "4344");
+    REQUIRE(board.getPhase() == OpeningMiddle);
+    board = moves.makeMoveAll(board, "0314");
+    REQUIRE(board.getPhase() == OpeningMiddle);
+    board = moves.makeMoveAll(board, "4414");
+    REQUIRE(board.getPhase() == OpeningMiddle);
+    board = moves.makeMoveAll(board, "0514");
+    REQUIRE(board.getPhase() == End);
+
+    board = Board::from("1kr5/1bb5/8/6PQ/8/8/4K3/8 w - - 0 1");
+    REQUIRE(board.getPhase() == End);
+
+    board = Board::from("1kq5/1b6/6B1/6PQ/8/2p5/4K3/8 w - - 0 1");
+    REQUIRE(board.getPhase() == End);
+}
+
+TEST_CASE("principal variation works") {
+    // Board board = Board::from("r4rk1/pp2bppp/2n1pB2/3p4/3P4/q2BPP1Q/4N1PP/3R1RK1 b - - 0 18");
+    // pair<string, int> a = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "");
+    // REQUIRE(a.second > 0 && a.second < 4);
 }

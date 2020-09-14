@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include "bitboard.h"
+#include "phase.h"
 using namespace std;
 
 class Board
@@ -30,9 +31,13 @@ private:
     bool CWQ;
     bool CBK;
     bool CBQ;
+    Phase phase;
 
 public:
-    Board(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, uint64_t EP, int halfMoveClock, int moveNumber, bool whiteToMove, bool CWK, bool CWQ, bool CBK, bool CBQ) : WP(WP), WN(WN), WB(WB), WR(WR), WQ(WQ), WK(WK), BP(BP), BN(BN), BB(BB), BR(BR), BQ(BQ), BK(BK), EP(EP), halfMoveClock(halfMoveClock), moveNumber(moveNumber), whiteToMove(whiteToMove), CWK(CWK), CWQ(CWQ), CBK(CBK), CBQ(CBQ){};
+    Board(uint64_t WP, uint64_t WN, uint64_t WB, uint64_t WR, uint64_t WQ, uint64_t WK, uint64_t BP, uint64_t BN, uint64_t BB, uint64_t BR, uint64_t BQ, uint64_t BK, uint64_t EP, int halfMoveClock, int moveNumber, bool whiteToMove, bool CWK, bool CWQ, bool CBK, bool CBQ) : WP(WP), WN(WN), WB(WB), WR(WR), WQ(WQ), WK(WK), BP(BP), BN(BN), BB(BB), BR(BR), BQ(BQ), BK(BK), EP(EP), halfMoveClock(halfMoveClock), moveNumber(moveNumber), whiteToMove(whiteToMove), CWK(CWK), CWQ(CWQ), CBK(CBK), CBQ(CBQ)
+    {
+        phase = calculatePhase();
+    };
 
     static Board initiateStandardChess()
     {
@@ -289,6 +294,11 @@ public:
     bool getCBQ()
     {
         return CBQ;
+    }
+
+    Phase getPhase()
+    {
+        return phase;
     }
 
     uint64_t whitePieces()
@@ -562,6 +572,22 @@ public:
         FEN += std::to_string(moveNumber);
 
         return FEN;
+    }
+
+    Phase calculatePhase()
+    {
+        std::bitset<64> WQBits = WQ;
+        std::bitset<64> BQBits = BQ;
+        std::bitset<64> WNBits = WN;
+        std::bitset<64> WBBits = WB;
+        std::bitset<64> WRBits = WR;
+        std::bitset<64> BNBits = BN;
+        std::bitset<64> BBBits = BB;
+        std::bitset<64> BRBits = BR;
+        Phase phase;
+        int minorAndRookCount = WNBits.count() + WBBits.count() + WRBits.count() + BNBits.count() + BBBits.count() + BRBits.count();
+        (WQBits.count() == 0 && BQBits.count() == 0 && minorAndRookCount < 7) || (WQBits.count() + BQBits.count() == 1 && minorAndRookCount < 5) || (WQBits.count() + BQBits.count() == 2 && minorAndRookCount < 3) ? phase = End : phase = OpeningMiddle;
+        return phase;
     }
 };
 
