@@ -561,8 +561,93 @@ TEST_CASE("endgame calculation works") {
     REQUIRE(board.getPhase() == End);
 }
 
-TEST_CASE("principal variation works") {
-    // Board board = Board::from("r4rk1/pp2bppp/2n1pB2/3p4/3P4/q2BPP1Q/4N1PP/3R1RK1 b - - 0 18");
-    // pair<string, int> a = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "");
-    // REQUIRE(a.second > 0 && a.second < 4);
+TEST_CASE("checkmate works") {
+    Moves &moves = Moves::getInstance();
+    Board board = Board::from("rnbqkbnr/ppppp2p/5p2/6pQ/4P3/3P4/PPP2PPP/RNB1KBNR b KQkq - 1 3");
+    REQUIRE(moves.isCheckmate(board));
+
+    board = Board::from("rnbqkbnr/ppppp2p/5p2/6p1/4P3/3P4/PPP2PPP/RNBQKBNR w KQkq g6 0 3");
+    REQUIRE(!moves.isCheckmate(board));
+
+    board = Board::from("rnbqkbnr/pppp1Bp1/7p/4p3/4P3/8/PPPP1PPP/RNBQK1NR b KQkq - 0 3");
+    REQUIRE(!moves.isCheckmate(board));
+}
+
+TEST_CASE("algebraic to maestro int string conversion works") {
+    Moves &moves = Moves::getInstance();
+    Board board = Board::from("7k/8/3N4/5p2/8/4N3/8/7K w - - 0 1");
+    string input = "e3f5";
+    string output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "5435");
+
+    board = Board::from("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+    input = "e1g1";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "7476");
+
+    board = Board::from("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4");
+    input = "e8g8";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "0406");
+
+    board = Board::from("r3k2r/pppbqppp/2np1n2/2b1p3/2B1P3/2NP1N2/PPPBQPPP/R3K2R w KQkq - 2 8");
+    input = "e1c1";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "7472");
+
+    board = Board::from("r3k2r/pppbqppp/2np1n2/2b1p3/2B1P3/2NP1N2/PPPBQPPP/2KR3R b kq - 3 8");
+    input = "e8c8";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "0402");
+
+    board = Board::from("8/3P4/8/7k/8/7K/8/8 w - - 0 1");
+    input = "d7d8q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "33QP");
+
+    board = Board::from("4n3/3P4/8/7k/8/7K/8/8 w - - 0 1");
+    input = "d7e8q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "34QP");
+
+    board = Board::from("2n5/3P4/8/7k/8/7K/8/8 w - - 0 1");
+    input = "d7c8q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "32QP");
+    
+    board = Board::from("8/8/8/7k/8/7K/3p4/8 b - - 0 1");
+    input = "d2d1q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "33Qp");
+    
+    board = Board::from("8/8/8/7k/8/7K/3p4/4N3 b - - 0 1");
+    input = "d2e1q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "34Qp");
+    
+    board = Board::from("8/8/8/7k/8/7K/3p4/2N5 b - - 0 1");
+    input = "d2c1q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "32Qp");
+    
+    board = Board::from("7k/8/8/2Pp4/8/8/8/7K w - d6 0 2");
+    input = "c5d6";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "23WE");
+    
+    board = Board::from("7k/8/8/8/2pP4/8/8/7K b - d3 0 1");
+    input = "c4d3";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "23BE");
+
+    board = Board::from("r1bqk2r/pppp1ppp/2n1pn2/8/2B1P3/2b2N2/PPPP1PPP/R1BQ1RK1 w kq - 0 6");
+    input = "d2c3";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    REQUIRE(output == "6352");
+
+    board = Board::from("1k6/6KP/6P1/p4P1r/P5R1/8/8/8 w - - 2 56");
+    input = "h7h8q";
+    output = moves.convertMoveToMaestroIntString(input, board);
+    board = moves.makeMoveAll(board, output);
+    REQUIRE(board.fen() == "1k5Q/6K1/6P1/p4P1r/P5R1/8/8/8 b - - 0 5");
 }

@@ -5,6 +5,7 @@
 
 #include "moves.h"
 #include "board.h"
+#include "search.h"
 
 void logInput(std::ostream &ucilog, std::string input)
 {
@@ -50,53 +51,24 @@ int main()
         else if (token == "uci")
         {
             tellUCI(ucilog, "id name Maestro\n");
-            tellUCI(ucilog, "id author David Chopin\n");
+            tellUCI(ucilog, "id author dvdutch\n");
             tellUCI(ucilog, "uciok\n");
             // tellUCI("copyprotection ok\n");
         }
         else if (token == "isready")
         {
+            board = Board::initiateStandardChess();
             tellUCI(ucilog, "readyok\n");
         }
         else if (token == "go")
         {
-
-            // FIXME: Check all options
-            // FIXME: Implement PV ordering
-            string selectedMove;
-            if (board.getWhiteToMove())
-            {
-                string pseudoLegalMoves = moves.pseudoLegalMovesW(board);
-                for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
-                {
-                    if (selectedMove.empty())
-                    {
-                        std::string currentMove = pseudoLegalMoves.substr(i, 4);
-                        Board tBoard = moves.makeMoveAll(board, currentMove);
-                        if ((moves.unsafeForWhite(tBoard) & tBoard.getWK()) == 0)
-                        {
-                            selectedMove = currentMove;
-                            board = tBoard;
-                        }
-                    }
-                }
-            } else {
-                string pseudoLegalMoves = moves.pseudoLegalMovesB(board);
-                for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
-                {
-                    if (selectedMove.empty())
-                    {
-                        std::string currentMove = pseudoLegalMoves.substr(i, 4);
-                        Board tBoard = moves.makeMoveAll(board, currentMove);
-                        if ((moves.unsafeForBlack(tBoard) & tBoard.getBK()) == 0)
-                        {
-                            selectedMove = currentMove;
-                            board = tBoard;
-                        }
-                    }
-                }
-            }
+            logInput(ucilog, "Board before engine move: ");
+            logInput(ucilog, board.fen());
+            string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
             tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
+            board = moves.makeMoveAll(board, selectedMove);
+            logInput(ucilog, "Board after engine move: ");
+            logInput(ucilog, board.fen());
         }
         else if (token == "ucinewgame")
         {
@@ -107,10 +79,23 @@ int main()
             std::string option;
             is >> std::skipws >> option;
 
+            logInput(ucilog, "Board before player move: ");
+            logInput(ucilog, board.fen());
+            string lastMoveString;
+            if (command[command.length() - 5] != ' ') {
+                lastMoveString += command[command.length() - 5];
+            }
+            lastMoveString += command[command.length() - 4];
+            lastMoveString += command[command.length() - 3];
+            lastMoveString += command[command.length() - 2];
+            lastMoveString += command[command.length() - 1];
+            board = moves.makeMoveAll(board, moves.convertMoveToMaestroIntString(lastMoveString, board));
+            logInput(ucilog, "Board after player move: ");
+            logInput(ucilog, board.fen());
             // Find Starting position
             if (option == "startpos")
             {
-                //board = Board::initiateStandardChess();
+                //board = moves.makeMoveAll(board, lastMoveString);
             }
             else if (option == "fen")
             { // FEN is given

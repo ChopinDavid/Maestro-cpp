@@ -1,0 +1,27 @@
+[Event "Computer chess game"]
+[Site "DESKTOP-BAD3VKB"]
+[Date "2020.09.15"]
+[Round "?"]
+[White "david"]
+[Black "Uci [029]"]
+[Result "0-1"]
+[BlackElo "2000"]
+[ECO "C15"]
+[Opening "French"]
+[Time "11:06:44"]
+[Variation "Winawer, Alekhine Gambit, 4...Nc6"]
+[WhiteElo "2400"]
+[TimeControl "33000"]
+[Termination "normal"]
+[PlyCount "78"]
+[WhiteType "human"]
+[BlackType "program"]
+
+1. e4 Nc6 2. d4 e6 3. Nc3 Bb4 4. Ne2 d5 5. e5 Nge7 6. g3 Bd7 7. Bg2 Nf5 8.
+Be3 Nxe3 9. fxe3 Qg5 10. Qd2 Qe7 11. O-O Qd8 12. a3 Ba5 13. b4 Bb6 14. Rf3
+a6 15. Raf1 f6 16. exf6 gxf6 17. Rxf6 Bc8 18. Bf3 Bd7 19. Bh5+ Ke7 20. Rf7+
+Kd6 21. e4 Be8 22. e5+ Nxe5 23. Kh1 Nxf7 24. Bxf7 Bc6 25. Qf4+ Kd7 26.
+Bxe6+ Kxe6 27. Qe5+ Kd7 28. Nxd5 Rg8 29. Rf7+ Kc8 30. Qe6+ Kb8 31. Nf4 Re8
+32. Qf5 Bxd4 33. Kg2 Bxd5+ 34. Nxd5 Re2+ 35. Kh3 Bg1 36. Nxc7 Rxh2+ 37. Kg4
+Qd4+ 38. Qf4 Qd1+ 39. Qf3 h5 {White resigns} 0-1
+

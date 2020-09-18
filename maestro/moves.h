@@ -1204,6 +1204,47 @@ public:
         return list;
     }
 
+    bool isCheckmate(Board board) {
+        bool isCheckmate = false;
+        if (board.getWhiteToMove() && (unsafeForWhite(board) & board.getWK()) != 0)
+        {
+            isCheckmate = true;
+            string pseudoLegalMoves = pseudoLegalMovesW(board);
+            for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
+            {
+                string individualMoveString;
+                individualMoveString += pseudoLegalMoves[i];
+                individualMoveString += pseudoLegalMoves[i + 1];
+                individualMoveString += pseudoLegalMoves[i + 2];
+                individualMoveString += pseudoLegalMoves[i + 3];
+                Board tBoard = makeMoveAll(board, individualMoveString);
+                if ((unsafeForWhite(tBoard) & tBoard.getWK()) == 0)
+                {
+                    isCheckmate = false;
+                }
+            }
+        }
+        if (!board.getWhiteToMove() && (unsafeForBlack(board) & board.getBK()) != 0)
+        {
+            isCheckmate = true;
+            string pseudoLegalMoves = pseudoLegalMovesB(board);
+            for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
+            {
+                string individualMoveString;
+                individualMoveString += pseudoLegalMoves[i];
+                individualMoveString += pseudoLegalMoves[i + 1];
+                individualMoveString += pseudoLegalMoves[i + 2];
+                individualMoveString += pseudoLegalMoves[i + 3];
+                Board tBoard = makeMoveAll(board, individualMoveString);
+                if ((unsafeForBlack(tBoard) & tBoard.getBK()) == 0)
+                {
+                    isCheckmate = false;
+                }
+            }
+        }
+        return isCheckmate;
+    }
+
     uint64_t makeMoveSinglePiece(Board board, uint64_t bitboard, string move, char moveType)
     {
         if (moveType == 'E')
@@ -2071,6 +2112,243 @@ public:
             }
         }
         return outputString;
+    }
+
+    string convertMoveToMaestroIntString(string move, Board board)
+    {
+        string strippedString;
+        int startSquare = (8 - int(move[1] - 48)) * 8 + convertLetterToFileInt(move[0]);
+        uint64_t startSquareBinary = 1ULL << startSquare;
+        int endSquare = (8 - int(move[3] - 48)) * 8 + convertLetterToFileInt(move[2]);
+        uint64_t endSquareBinary = 1ULL << endSquare;
+        bool isEP = (board.getWhiteToMove() && (startSquareBinary & board.getWP()) != 0 && move[0] != move[2] && (endSquareBinary & board.occupied()) == 0) || (!board.getWhiteToMove() && (startSquareBinary & board.getBP()) != 0 && move[0] != move[2] && (endSquareBinary & board.occupied()) == 0);
+
+        if (move.length() == 5)
+        {
+            switch (move[0])
+            {
+            case 'a':
+                strippedString += '0';
+                break;
+            case 'b':
+                strippedString += '1';
+                break;
+            case 'c':
+                strippedString += '2';
+                break;
+            case 'd':
+                strippedString += '3';
+                break;
+            case 'e':
+                strippedString += '4';
+                break;
+            case 'f':
+                strippedString += '5';
+                break;
+            case 'g':
+                strippedString += '6';
+                break;
+            case 'h':
+                strippedString += '7';
+                break;
+            }
+            switch (move[2])
+            {
+            case 'a':
+                strippedString += '0';
+                break;
+            case 'b':
+                strippedString += '1';
+                break;
+            case 'c':
+                strippedString += '2';
+                break;
+            case 'd':
+                strippedString += '3';
+                break;
+            case 'e':
+                strippedString += '4';
+                break;
+            case 'f':
+                strippedString += '5';
+                break;
+            case 'g':
+                strippedString += '6';
+                break;
+            case 'h':
+                strippedString += '7';
+                break;
+            }
+            strippedString += toupper(move[4]);
+            if (board.getWhiteToMove())
+            {
+                strippedString += 'P';
+            }
+            else
+            {
+                strippedString += 'p';
+            }
+            
+        }
+        else if (isEP)
+        {
+            strippedString += ('0' + convertLetterToFileInt(move[0]));
+            strippedString += ('0' + convertLetterToFileInt(move[2]));
+            if (board.getWhiteToMove())
+            {
+                strippedString += "WE";
+            }
+            else
+            {
+                strippedString += "BE";
+            }
+        }
+        else
+        {
+            switch (move[1])
+            {
+            case '1':
+                strippedString += '7';
+                break;
+            case '2':
+                strippedString += '6';
+                break;
+            case '3':
+                strippedString += '5';
+                break;
+            case '4':
+                strippedString += '4';
+                break;
+            case '5':
+                strippedString += '3';
+                break;
+            case '6':
+                strippedString += '2';
+                break;
+            case '7':
+                strippedString += '1';
+                break;
+            case '8':
+                strippedString += '0';
+                break;
+            }
+            switch (move[0])
+            {
+            case 'a':
+                strippedString += '0';
+                break;
+            case 'b':
+                strippedString += '1';
+                break;
+            case 'c':
+                strippedString += '2';
+                break;
+            case 'd':
+                strippedString += '3';
+                break;
+            case 'e':
+                strippedString += '4';
+                break;
+            case 'f':
+                strippedString += '5';
+                break;
+            case 'g':
+                strippedString += '6';
+                break;
+            case 'h':
+                strippedString += '7';
+                break;
+            }
+            switch (move[3])
+            {
+            case '1':
+                strippedString += '7';
+                break;
+            case '2':
+                strippedString += '6';
+                break;
+            case '3':
+                strippedString += '5';
+                break;
+            case '4':
+                strippedString += '4';
+                break;
+            case '5':
+                strippedString += '3';
+                break;
+            case '6':
+                strippedString += '2';
+                break;
+            case '7':
+                strippedString += '1';
+                break;
+            case '8':
+                strippedString += '0';
+                break;
+            }
+            switch (move[2])
+            {
+            case 'a':
+                strippedString += '0';
+                break;
+            case 'b':
+                strippedString += '1';
+                break;
+            case 'c':
+                strippedString += '2';
+                break;
+            case 'd':
+                strippedString += '3';
+                break;
+            case 'e':
+                strippedString += '4';
+                break;
+            case 'f':
+                strippedString += '5';
+                break;
+            case 'g':
+                strippedString += '6';
+                break;
+            case 'h':
+                strippedString += '7';
+                break;
+            }
+        }
+        return strippedString;
+    }
+
+    int convertLetterToFileInt(char letter)
+    {
+        switch (letter)
+        {
+        case 'a':
+            return 0;
+            break;
+        case 'b':
+            return 1;
+            break;
+        case 'c':
+            return 2;
+            break;
+        case 'd':
+            return 3;
+            break;
+        case 'e':
+            return 4;
+            break;
+        case 'f':
+            return 5;
+            break;
+        case 'g':
+            return 6;
+            break;
+        case 'h':
+            return 7;
+            break;
+        default:
+            return 0;
+            break;
+        }
     }
 };
 

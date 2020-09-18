@@ -12,12 +12,19 @@ using namespace std;
 class Search
 {
 public:
-    static std::pair<string, int> alphabeta(Board node, int depth, int alpha, int beta, string move)
+    static std::pair<string, int> alphabeta(Board node, int depth, int alpha, int beta, string move, string firstMove)
     {
         Moves &moves = Moves::getInstance();
-        if (depth == 0 /*or node is a terminal node*/)
+        if (moves.isCheckmate(node)) {
+            if (node.getWhiteToMove()) {
+                return std::make_pair(firstMove, INT_MIN);
+            } else {
+                return std::make_pair(firstMove, INT_MAX);
+            }
+        }
+        if (depth == 0)
         {
-            return std::make_pair(move, Rating::getCentipawnValue(node));
+            return std::make_pair(firstMove, Rating::getCentipawnValue(node));
         }
         if (node.getWhiteToMove())
         {
@@ -34,14 +41,22 @@ public:
                 Board tNode = moves.makeMoveAll(node, individualMoveString);
                 if ((moves.unsafeForWhite(tNode) & tNode.getWK()) == 0)
                 {
-                    std::pair<string, int> ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString);
+                    std::pair<string, int> ab;
+                    if (firstMove == "")
+                    {
+                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, individualMoveString);
+                    }
+                    else
+                    {
+                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, firstMove);
+                    }
                     if (ab.second > value)
                     {
                         value = ab.second;
                         bestMove = ab.first;
                     }
                     alpha = max(alpha, value);
-                    if (alpha > beta)
+                    if (alpha >= beta)
                     {
                         break;
                     }
@@ -64,14 +79,22 @@ public:
                 Board tNode = moves.makeMoveAll(node, individualMoveString);
                 if ((moves.unsafeForBlack(tNode) & tNode.getBK()) == 0)
                 {
-                    std::pair<string, int> ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString);
+                    std::pair<string, int> ab;
+                    if (firstMove == "")
+                    {
+                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, individualMoveString);
+                    }
+                    else
+                    {
+                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, firstMove);
+                    }
                     if (ab.second < value)
                     {
                         value = ab.second;
                         bestMove = ab.first;
                     }
-                    alpha = min(alpha, value);
-                    if (alpha > beta)
+                    beta = min(beta, value);
+                    if (alpha >= beta)
                     {
                         break;
                     }
