@@ -31,6 +31,9 @@ public:
             string bestMove;
             int value = INT_MIN;
             string pseudoLegalMoves = moves.pseudoLegalMovesW(node);
+            if (pseudoLegalMoves.length() == 0) {
+                return std::make_pair(firstMove, 0);
+            }
             for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
             {
                 string individualMoveString;
@@ -69,6 +72,9 @@ public:
             string bestMove;
             int value = INT_MAX;
             string pseudoLegalMoves = moves.pseudoLegalMovesB(node);
+            if (pseudoLegalMoves.length() == 0) {
+                return std::make_pair(firstMove, 0);
+            }
             for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
             {
                 string individualMoveString;

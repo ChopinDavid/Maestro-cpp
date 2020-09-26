@@ -9,9 +9,17 @@
                 "--%",
                 "-g",
                 "-Wa,-mbig-obj",
+                "${workspaceFolder}\\maestro\\board.cpp",
+                "-o",
+                "${workspaceFolder}\\maestro\\board.exe",
+                "${workspaceFolder}\\maestro\\bitboard.cpp",
+                "-o",
+                "${workspaceFolder}\\maestro\\bitboard.exe",
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
+
+                
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
