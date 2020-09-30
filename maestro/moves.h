@@ -1356,7 +1356,7 @@ public:
         }
         else
         {
-            cout << "ERROR: Invalid move type" << endl;
+            cout << "ERROR: Invalid move type: " << move << "move type: " << moveType << endl;
         }
         return bitboard;
     }

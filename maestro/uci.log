@@ -1,0 +1,7 @@
+I xboard
+I uci
+O id name Maestro
+O id author dvdutch
+O uciok
+I isready
+O readyok

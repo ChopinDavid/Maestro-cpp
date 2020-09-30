@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <iterator>
 
 #include "moves.h"
 #include "board.h"
@@ -18,6 +20,15 @@ void tellUCI(std::ostream &ucilog, std::string output)
     std::cout << output;
     ucilog << "O " << output;
     ucilog.flush();
+}
+
+vector<string> split(string s)
+{
+    std::stringstream ss(s);
+    std::istream_iterator<std::string> begin(ss);
+    std::istream_iterator<std::string> end;
+    std::vector<std::string> vstrings(begin, end);
+    return vstrings;
 }
 
 int main()
@@ -57,60 +68,40 @@ int main()
         }
         else if (token == "isready")
         {
-            board = Board::initiateStandardChess();
             tellUCI(ucilog, "readyok\n");
         }
         else if (token == "go")
         {
-            logInput(ucilog, "Board before engine move: ");
-            logInput(ucilog, board.fen());
-            string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
-            tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
-            board = moves.makeMoveAll(board, selectedMove);
-            logInput(ucilog, "Board after engine move: ");
-            logInput(ucilog, board.fen());
+            // logInput(ucilog, "Board before engine move: ");
+            // logInput(ucilog, board.fen());
+            // string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
+            // tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
+            // tellUCI(ucilog, "222222222222222222");
+            // board = moves.makeMoveAll(board, selectedMove);
+            // logInput(ucilog, "Board after engine move: ");
+            // logInput(ucilog, board.fen());
         }
         else if (token == "ucinewgame")
         {
-            //board = Board::initiateStandardChess();
+            board = Board::initiateStandardChess();
         }
         else if (token == "position")
         {
-            std::string option;
-            is >> std::skipws >> option;
 
-            logInput(ucilog, "Board before player move: ");
-            logInput(ucilog, board.fen());
-            string lastMoveString;
-            if (command[command.length() - 5] != ' ') {
-                lastMoveString += command[command.length() - 5];
-            }
-            lastMoveString += command[command.length() - 4];
-            lastMoveString += command[command.length() - 3];
-            lastMoveString += command[command.length() - 2];
-            lastMoveString += command[command.length() - 1];
-            board = moves.makeMoveAll(board, moves.convertMoveToMaestroIntString(lastMoveString, board));
-            logInput(ucilog, "Board after player move: ");
-            logInput(ucilog, board.fen());
-            // Find Starting position
-            if (option == "startpos")
+            vector<string> arguments = split(command);
+            string finalArgument = arguments.at(arguments.size() - 1);
+            if (finalArgument == "startpos")
             {
-                //board = moves.makeMoveAll(board, lastMoveString);
-            }
-            else if (option == "fen")
-            { // FEN is given
-                board.from(option);
+                string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
+                tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
+                board = moves.makeMoveAll(board, selectedMove);
             }
             else
             {
-                return 0;
-            }
-
-            // Check if there are any moves given
-            is >> std::skipws >> option;
-            if (option == "moves")
-            {
-                cout << option << endl;
+                board = moves.makeMoveAll(board, moves.convertMoveToMaestroIntString(finalArgument, board));
+                string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
+                tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
+                board = moves.makeMoveAll(board, selectedMove);
             }
         }
 
