@@ -71,9 +71,9 @@ function streamGame(id) {
                     case 'gameState':
                         let moves = (jsonChunk.moves).split(" ");
                         let whiteToMove = moves.length % 2 == 0 ? true : false;
-                        if (whiteToMove && isWhite) {
-                        } else if (!whiteToMove && !isWhite) {
-
+                        if ((whiteToMove && isWhite) || (!whiteToMove && !isWhite)) {
+                            console.log("writing to engine " + jsonChunk.moves);
+                            engineStream.stdin.write(`position startpos moves ${jsonChunk.moves}\n`);
                         }
                         break;
                     case 'gameFull':

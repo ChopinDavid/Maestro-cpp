@@ -6,3 +6,84 @@ I isready
 O readyok
 I position startpos
 O bestmove e2e4
+I board after move: rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e4 0 1
+I position startpos moves e2e4 c7c5
+O bestmove b1c3
+I board after move: rnbqkbnr/pp1ppppp/8/2p5/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2
+I position startpos moves e2e4 c7c5 b1c3 d7d6
+O bestmove d2d4
+I board after move: rnbqkbnr/pp2pppp/3p4/2p5/3PP3/2N5/PPP2PPP/R1BQKBNR b KQkq d4 0 3
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4
+O bestmove d1d4
+I board after move: rnbqkbnr/pp2pppp/3p4/8/3QP3/2N5/PPP2PPP/R1B1KBNR b KQkq - 0 4
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6
+O bestmove d4a4
+I board after move: r1bqkbnr/pp2pppp/2np4/8/Q3P3/2N5/PPP2PPP/R1B1KBNR b KQkq - 2 5
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6
+O bestmove c1g5
+I board after move: r1bqkb1r/pp2pppp/2np1n2/6B1/Q3P3/2N5/PPP2PPP/R3KBNR b KQkq - 4 6
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6
+O bestmove f1b5
+I board after move: r1bqkb1r/pp3ppp/2nppn2/1B4B1/Q3P3/2N5/PPP2PPP/R3K1NR b KQkq - 1 7
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7
+O bestmove g1f3
+I board after move: r2qkb1r/pp1b1ppp/2nppn2/1B4B1/Q3P3/2N2N2/PPP2PPP/R3K2R b KQkq - 3 8
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7
+O bestmove e1g1
+I board after move: r2qk2r/pp1bbppp/2nppn2/1B4B1/Q3P3/2N2N2/PPP2PPP/R4RK1 b kq - 5 9
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8
+O bestmove h2h4
+I board after move: r2q1rk1/pp1bbppp/2nppn2/1B4B1/Q3P2P/2N2N2/PPP2PP1/R4RK1 b - h4 0 10
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6
+O bestmove b5c6
+I board after move: r2q1rk1/1p1bbppp/p1Bppn2/6B1/Q3P2P/2N2N2/PPP2PP1/R4RK1 b - - 0 11
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6
+O bestmove a4c4
+I board after move: r2q1rk1/1p2bppp/p1bppn2/6B1/2Q1P2P/2N2N2/PPP2PP1/R4RK1 b - - 1 12
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7
+O bestmove f3d4
+I board after move: 3q1rk1/rp2bppp/p1bppn2/6B1/2QNP2P/2N5/PPP2PP1/R4RK1 b - - 3 13
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4
+O bestmove d4c6
+I board after move: 3q1rk1/rp2bppp/p1Npp3/6B1/2Q1n2P/2N5/PPP2PP1/R4RK1 b - - 0 14
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4 d4c6 b7c6
+O bestmove c3e4
+I board after move: 3q1rk1/r3bppp/p1ppp3/6B1/2Q1N2P/8/PPP2PP1/R4RK1 b - - 0 15
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4 d4c6 b7c6 c3e4 d6d5
+O bestmove c4d4
+I board after move: 3q1rk1/r3bppp/p1p1p3/3p2B1/3QN2P/8/PPP2PP1/R4RK1 b - - 1 16
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4 d4c6 b7c6 c3e4 d6d5 c4d4 d5e4
+O bestmove d4a7
+I board after move: 3q1rk1/Q3bppp/p1p1p3/6B1/4p2P/8/PPP2PP1/R4RK1 b - - 0 17
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4 d4c6 b7c6 c3e4 d6d5 c4d4 d5e4 d4a7 e7g5
+O bestmove h4g5
+I board after move: 3q1rk1/Q4ppp/p1p1p3/6P1/4p3/8/PPP2PP1/R4RK1 b - - 0 18
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4 d4c6 b7c6 c3e4 d6d5 c4d4 d5e4 d4a7 e7g5 h4g5 d8g5
+O bestmove a1e1
+I board after move: 5rk1/Q4ppp/p1p1p3/6q1/4p3/8/PPP2PP1/4RRK1 b - - 1 19
+I position startpos moves e2e4 c7c5 b1c3 d7d6 d2d4 c5d4 d1d4 b8c6 d4a4 g8f6 c1g5 e7e6 f1b5 c8d7 g1f3 f8e7 e1g1 e8g8 h2h4 a7a6 b5c6 d7c6 a4c4 a8a7 f3d4 f6e4 d4c6 b7c6 c3e4 d6d5 c4d4 d5e4 d4a7 e7g5 h4g5 d8g5 a1e1 f8a8
+O bestmove ae1
+I board after move: r5k1/Q4ppp/p1p1p3/6q1/4p3/8/PPP2PP1/4RRK1 b - - 0 20
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 
+I 

@@ -72,14 +72,6 @@ int main()
         }
         else if (token == "go")
         {
-            // logInput(ucilog, "Board before engine move: ");
-            // logInput(ucilog, board.fen());
-            // string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
-            // tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
-            // tellUCI(ucilog, "222222222222222222");
-            // board = moves.makeMoveAll(board, selectedMove);
-            // logInput(ucilog, "Board after engine move: ");
-            // logInput(ucilog, board.fen());
         }
         else if (token == "ucinewgame")
         {
@@ -95,6 +87,7 @@ int main()
                 string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
                 tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
                 board = moves.makeMoveAll(board, selectedMove);
+                logInput(ucilog, "board after move: " + board.fen());
             }
             else
             {
@@ -102,6 +95,7 @@ int main()
                 string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
                 tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
                 board = moves.makeMoveAll(board, selectedMove);
+                logInput(ucilog, "board after move: " + board.fen());
             }
         }
 

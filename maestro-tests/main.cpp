@@ -369,7 +369,6 @@ TEST_CASE("move making works")
 
     board = Board::from("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
     board = moves.makeMoveAll(board, "7476");
-    cout << "a" << endl;
     REQUIRE(board.boardString() == "[ r ][   ][ b ][ q ][ k ][   ][ n ][ r ]\n[ p ][ p ][ p ][ p ][   ][ p ][ p ][ p ]\n[   ][   ][ n ][   ][   ][   ][   ][   ]\n[   ][   ][ b ][   ][ p ][   ][   ][   ]\n[   ][   ][ B ][   ][ P ][   ][   ][   ]\n[   ][   ][   ][   ][   ][ N ][   ][   ]\n[ P ][ P ][ P ][ P ][   ][ P ][ P ][ P ]\n[ R ][ N ][ B ][ Q ][   ][ R ][ K ][   ]");
 
     board = Board::from("r2q1rk1/ppp2ppp/2npbn2/2b1p1B1/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ - 2 8");
@@ -650,4 +649,20 @@ TEST_CASE("algebraic to maestro int string conversion works") {
     output = moves.convertMoveToMaestroIntString(input, board);
     board = moves.makeMoveAll(board, output);
     REQUIRE(board.fen() == "1k5Q/6K1/6P1/p4P1r/P5R1/8/8/8 b - - 0 5");
+}
+
+TEST_CASE("mestro int to algebraic string conversion works") {
+    Moves &moves = Moves::getInstance();
+    Board board = Board::from("r5k1/Q4ppp/p1p1p3/6q1/4p3/8/PPP2PP1/4RRK1 w - - 1 20");
+    string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
+    cout << selectedMove;
+    string output = moves.convertMoveToAlgebraUCI(selectedMove, board);
+    // REQUIRE(output == "a7a8");
+
+    
+    board = Board::from("4rrk1/ppp2pp1/8/4P3/6Q1/P1P1P3/q4PPP/R5K1 b - - 0 1");
+    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
+    cout << selectedMove;
+    output = moves.convertMoveToAlgebraUCI(selectedMove, board);
+    REQUIRE(output == "a2a1");
 }
