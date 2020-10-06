@@ -653,16 +653,39 @@ TEST_CASE("algebraic to maestro int string conversion works") {
 
 TEST_CASE("mestro int to algebraic string conversion works") {
     Moves &moves = Moves::getInstance();
-    Board board = Board::from("r5k1/Q4ppp/p1p1p3/6q1/4p3/8/PPP2PP1/4RRK1 w - - 1 20");
-    string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
-    cout << selectedMove;
-    string output = moves.convertMoveToAlgebraUCI(selectedMove, board);
-    // REQUIRE(output == "a7a8");
+    //Mate in 1, white to move
+    Board board = Board::from("rnbqkb1r/ppp2ppp/3p1n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 4");
+    pair<string, int> selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "");
+    string output = moves.convertMoveToAlgebraUCI(selectedMove.first, board);
+    CHECK(output == "h5f7");
 
-    
+    //Mate in 2, white to move FAILING
+    board = Board::from("r5k1/Q4ppp/p1p1p3/6q1/4p3/8/PPP2PP1/4RRK1 w - - 1 20");
+    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "");
+    output = moves.convertMoveToAlgebraUCI(selectedMove.first, board);
+    CHECK(output == "a7a8");
+
+    //Mate in 2, black to move FAILING
     board = Board::from("4rrk1/ppp2pp1/8/4P3/6Q1/P1P1P3/q4PPP/R5K1 b - - 0 1");
-    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
-    cout << selectedMove;
-    output = moves.convertMoveToAlgebraUCI(selectedMove, board);
-    REQUIRE(output == "a2a1");
+    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "");
+    output = moves.convertMoveToAlgebraUCI(selectedMove.first, board);
+    CHECK(output == "a2a1");
+
+    //Mate in 3, white to move FAILING
+    board = Board::from("r5rk/5p1p/5R2/4B3/8/8/7P/7K w - - 0 0");
+    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "");
+    output = moves.convertMoveToAlgebraUCI(selectedMove.first, board);
+    CHECK(output == "f6a6");
+
+    //Mate in 4, black to move
+    board = Board::from("Q7/p1p1q1pk/3p2rp/4n3/3bP3/7b/PP3PPK/R1B2R2 b - - 0 1");
+    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "");
+    output = moves.convertMoveToAlgebraUCI(selectedMove.first, board);
+    CHECK(output == "h3g2");
+
+    //Mate in 5, black to move
+    board = Board::from("6k1/3b3r/1p1p4/p1n2p2/1PPNpP1q/P3Q1p1/1R1RB1P1/5K2 b - - 0-1");
+    selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "");
+    output = moves.convertMoveToAlgebraUCI(selectedMove.first, board);
+    CHECK(output == "h4f4");
 }

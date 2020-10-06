@@ -28,8 +28,8 @@ public:
         }
         if (node.getWhiteToMove())
         {
-            string bestMove;
-            int value = INT_MIN;
+            string bestMove = move;
+            int bestValue = INT_MIN;
             string pseudoLegalMoves = moves.pseudoLegalMovesW(node);
             if (pseudoLegalMoves.length() == 0) {
                 return std::make_pair(firstMove, 0);
@@ -53,24 +53,26 @@ public:
                     {
                         ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, firstMove);
                     }
-                    if (ab.second > value)
+                    int val = ab.second;
+                    string move = ab.first;
+                    if (val > bestValue)
                     {
-                        value = ab.second;
-                        bestMove = ab.first;
+                        bestValue = val;
+                        bestMove = move;
                     }
-                    alpha = max(alpha, value);
+                    alpha = max(alpha, bestValue);
                     if (alpha >= beta)
                     {
                         break;
                     }
                 }
             }
-            return std::make_pair(bestMove, value);
+            return std::make_pair(bestMove, bestValue);
         }
         else
         {
-            string bestMove;
-            int value = INT_MAX;
+            string bestMove = move;
+            int bestValue = INT_MAX;
             string pseudoLegalMoves = moves.pseudoLegalMovesB(node);
             if (pseudoLegalMoves.length() == 0) {
                 return std::make_pair(firstMove, 0);
@@ -94,19 +96,21 @@ public:
                     {
                         ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, firstMove);
                     }
-                    if (ab.second < value)
+                    int val = ab.second;
+                    string move = ab.first;
+                    if (ab.second < bestValue)
                     {
-                        value = ab.second;
+                        bestValue = ab.second;
                         bestMove = ab.first;
                     }
-                    beta = min(beta, value);
+                    beta = min(beta, bestValue);
                     if (alpha >= beta)
                     {
                         break;
                     }
                 }
             }
-            return std::make_pair(bestMove, value);
+            return std::make_pair(bestMove, bestValue);
         }
     }
 };
