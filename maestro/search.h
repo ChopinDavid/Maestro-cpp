@@ -28,7 +28,7 @@ public:
         }
         if (node.getWhiteToMove())
         {
-            string bestMove = move;
+            string bestMove = firstMove;
             int bestValue = INT_MIN;
             string pseudoLegalMoves = moves.pseudoLegalMovesW(node);
             if (pseudoLegalMoves.length() == 0) {
@@ -71,7 +71,7 @@ public:
         }
         else
         {
-            string bestMove = move;
+            string bestMove = firstMove;
             int bestValue = INT_MAX;
             string pseudoLegalMoves = moves.pseudoLegalMovesB(node);
             if (pseudoLegalMoves.length() == 0) {

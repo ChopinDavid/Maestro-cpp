@@ -66,6 +66,7 @@ function streamGame(id) {
             var textChunk = chunk.toString('utf8');
             try {
                 var jsonChunk = JSON.parse(textChunk);
+                console.log("game stream: ");
                 console.log(jsonChunk);
                 switch (jsonChunk.type) {
                     case 'gameState':
@@ -88,6 +89,7 @@ function streamGame(id) {
                             console.log("isblack");
                             isWhite = false;
                         }
+                        engineStream.stdin.write('ucinewgame\nisready\n');
                     default:
                         break;
                 }
@@ -141,16 +143,19 @@ function go() {
             var textChunk = chunk.toString('utf8');
             try {
                 var jsonChunk = JSON.parse(textChunk);
+                console.log("state stream: ");
                 console.log(jsonChunk);
                 switch (jsonChunk.type) {
                     case 'challenge':
-                        if (engineIsReady) {
+                        if (engineIsReady && !inGame) {
                             acceptChallenge(jsonChunk.challenge.id);
                         }
                         break;
                     case 'gameStart':
                         streamGame(jsonChunk.game.id);
                         break;
+                    case 'gameFinish':
+                        inGame = false;
                     default:
                         break;
                 }
