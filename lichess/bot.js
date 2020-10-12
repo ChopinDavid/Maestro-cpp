@@ -89,7 +89,6 @@ function streamGame(id) {
                             console.log("isblack");
                             isWhite = false;
                         }
-                        engineStream.stdin.write('ucinewgame\nisready\n');
                     default:
                         break;
                 }

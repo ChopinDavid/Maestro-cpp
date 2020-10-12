@@ -2,3 +2,14 @@ I uci
 O id name Maestro
 O id author dvdutch
 O uciok
+I isready
+O readyok
+I position startpos
+O bestmove e2e4
+I board after move: rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e4 0 1
+I position startpos moves e2e4 c7c5
+O bestmove b1c3
+I board after move: rnbqkbnr/pp1ppppp/8/2p5/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2
+I position startpos moves e2e4 c7c5 b1c3 d7d6
+O bestmove d2d4
+I board after move: rnbqkbnr/pp2pppp/3p4/2p5/3PP3/2N5/PPP2PPP/R1BQKBNR b KQkq d4 0 3
