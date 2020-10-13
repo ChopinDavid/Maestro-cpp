@@ -1,6 +1,8 @@
 const https = require('https');
 const personalToken = 'WmE0udZGdBY8QAEI';
 const baseUrl = 'lichess.org';
+var StringDecoder = require('string_decoder').StringDecoder;
+var decoder = new StringDecoder('utf8');
 const engineExePath = 'C:\\Users\\chopi\\Desktop\\chess-engine\\maestro\\uci.exe';
 const childProcess = require('child_process');
 const spawn_options = {
@@ -12,28 +14,34 @@ var isWhite;
 var moveCount;
 var currentGameId;
 
-const engineStream = childProcess.spawn(engineExePath, [], spawn_options);
-engineStream.stdout.on('data', function (data) {
-    var result = data.toString();
-    console.log(`RESULT: ${result}`);
-    if (result == 'id name Maestro\r\nid author dvdutch\r\nuciok\r\n') {
-        engineStream.stdin.write('isready\n');
-    } else if (result == 'readyok\r\n') {
-        engineIsReady = true;
-    } else if (result.substring(0, 8) === "bestmove") {
-        let move = result.split(" ")[1].trim();
-        makeMove(move, currentGameId);
-    } else {
-        console.log('no match');
-    }
-});
+var engineStream;
 
-engineStream.stderr.on('data', function (data) {
-    var result = data.toString();
-    console.log(`ERROR: ${result}`);
-});
+function startEngine(callback) {
+    engineStream = childProcess.spawn(engineExePath, [], spawn_options);
+    engineStream.stdout.on('data', function (data) {
+        var result = decoder.write(data);
+        console.log(`RESULT: ${result}`);
+        if (result == 'id name Maestro\r\nid author dvdutch\r\nuciok\r\n') {
+            engineStream.stdin.write('isready\n');
+        } else if (result == 'readyok\r\n') {
+            engineIsReady = true;
+            callback();
+        } else if (result.substring(0, 8) === "bestmove") {
+            let move = result.split(" ")[1].trim();
+            makeMove(move, currentGameId);
+        } else {
+            console.log('no match');
+        }
+    });
 
-engineStream.stdin.write('uci\n');
+    engineStream.stdin.write('uci\n');
+}
+
+function endEngine() {
+    console.log("ending engine");
+    engineStream = null;
+    engineIsReady = false;
+}
 
 function acceptChallenge(id) {
     var options = {
@@ -146,8 +154,10 @@ function go() {
                 console.log(jsonChunk);
                 switch (jsonChunk.type) {
                     case 'challenge':
-                        if (engineIsReady && !inGame) {
-                            acceptChallenge(jsonChunk.challenge.id);
+                        if (!inGame) {
+                            startEngine(() => {
+                                acceptChallenge(jsonChunk.challenge.id);
+                            });
                         }
                         break;
                     case 'gameStart':
@@ -155,6 +165,7 @@ function go() {
                         break;
                     case 'gameFinish':
                         inGame = false;
+                        endEngine();
                     default:
                         break;
                 }
