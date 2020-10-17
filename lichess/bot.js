@@ -1,5 +1,6 @@
+require('dotenv').config()
 const https = require('https');
-const personalToken = 'WmE0udZGdBY8QAEI';
+const personalToken = process.env.PERSONAL_TOKEN;
 const baseUrl = 'lichess.org';
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
@@ -10,6 +11,7 @@ const spawn_options = {
 }
 var engineIsReady = false;
 var inGame = false;
+var currentOpponentUsername;
 var isWhite;
 var moveCount;
 var currentGameId;
@@ -60,6 +62,23 @@ function acceptChallenge(id) {
     request.end();
 }
 
+function createChallenge(username) {
+    var options = {
+        host: baseUrl,
+        path: `/api/challenge/${username}?rated=true&clock.limit=300&clock.increment=0`,
+        headers: { 'Authorization': 'Bearer ' + personalToken },
+        method: 'POST'
+    };
+    var request = https.request(options);
+
+    request.on('error', function (err) {
+        // Handle error
+        console.log(err);
+    });
+
+    request.end();
+}
+
 function streamGame(id) {
     var options = {
         host: baseUrl,
@@ -78,13 +97,21 @@ function streamGame(id) {
                 console.log(jsonChunk);
                 switch (jsonChunk.type) {
                     case 'gameState':
-                        let moves = (jsonChunk.moves).split(" ");
-                        let whiteToMove = moves.length % 2 == 0 ? true : false;
-                        if ((whiteToMove && isWhite) || (!whiteToMove && !isWhite)) {
-                            console.log("writing to engine " + jsonChunk.moves);
-                            engineStream.stdin.write(`position startpos moves ${jsonChunk.moves}\n`);
+                        if (jsonChunk.status == "started") {
+                            let moves = (jsonChunk.moves).split(" ");
+                            if (moves.length == 0) {
+                                break;
+                            }
+                            let whiteToMove = moves.length % 2 == 0 ? true : false;
+
+                            if ((whiteToMove && isWhite) || (!whiteToMove && !isWhite)) {
+                                console.log("writing to engine " + jsonChunk.moves);
+                                engineStream.stdin.write(`position startpos moves ${jsonChunk.moves}\n`);
+                                engineStream.stdin.write(`go wtime ${jsonChunk.wtime} btime ${jsonChunk.btime} winc ${jsonChunk.winc} binc ${jsonChunk.binc}\n`);
+                            }
+                            break;
                         }
-                        break;
+
                     case 'gameFull':
                         inGame = true;
                         moveCount = 0;
@@ -92,16 +119,25 @@ function streamGame(id) {
                         if (jsonChunk.white.id == "maestrobot") {
                             console.log("iswhite");
                             isWhite = true;
+                            currentOpponentUsername = jsonChunk.black.name;
                             engineStream.stdin.write('position startpos\n');
+                            engineStream.stdin.write(`go wtime ${jsonChunk.state.wtime} btime ${jsonChunk.state.btime} winc ${jsonChunk.state.winc} binc ${jsonChunk.state.binc}\n`);
                         } else {
+                            currentOpponentUsername = jsonChunk.white.name;
                             console.log("isblack");
                             isWhite = false;
+                            if (jsonChunk.state.moves != null) {
+                                engineStream.stdin.write(`position startpos moves ${jsonChunk.state.moves}\n`);
+                                engineStream.stdin.write(`go wtime ${jsonChunk.state.wtime} btime ${jsonChunk.state.btime} winc ${jsonChunk.state.winc} binc ${jsonChunk.state.binc}\n`);
+                            }
                         }
                     default:
                         break;
                 }
             } catch (e) {
-                console.log(`unable to convert to JSON: ${e}`);
+                if (e != "SyntaxError: Unexpected end of JSON input") {
+                    console.log(`unable to convert to JSON: ${e}`);
+                }
             } finally {
 
             }
@@ -164,13 +200,23 @@ function go() {
                         streamGame(jsonChunk.game.id);
                         break;
                     case 'gameFinish':
+                        var tempOpponentUsername = currentOpponentUsername;
+                        currentOpponentUsername = null;
                         inGame = false;
+                        endEngine();
+                        startEngine(() => {
+                            createChallenge(tempOpponentUsername);
+                        });
+
+                    case 'challengeDeclined':
                         endEngine();
                     default:
                         break;
                 }
             } catch (e) {
-                console.log(`unable to convert to JSON: ${e}`);
+                if (e != "SyntaxError: Unexpected end of JSON input") {
+                    console.log(`unable to convert to JSON: ${e}`);
+                }
             } finally {
 
             }

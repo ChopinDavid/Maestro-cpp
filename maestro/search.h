@@ -8,37 +8,38 @@
 #include "board.h"
 #include "rating.h"
 #include "moves.h"
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 class Search
 {
 public:
-    static std::pair<string, int> alphabeta(Board node, int depth, int alpha, int beta, string move, string firstMove)
+    static std::pair<string, int> minimax(Board node, int depth, int alpha, int beta, string move, string firstMove, milliseconds breakOffTime)
     {
-        string depthString;
-        for (int i = 6; i > depth; i--)
+        if (breakOffTime != std::chrono::milliseconds(0))
         {
-            depthString = depthString + "   ";
+            milliseconds currentTime = duration_cast<milliseconds>(
+                system_clock::now().time_since_epoch());
+            if (currentTime > breakOffTime)
+            {
+                return std::make_pair("", 0);
+            }
         }
-        std::ofstream searchlog;
-        searchlog.open("search.log", std::ios_base::app);
-        searchlog << depthString << "node: " << node.fen() << endl;
+
         Moves &moves = Moves::getInstance();
         if (moves.isCheckmate(node))
         {
             if (node.getWhiteToMove())
             {
-                searchlog << depthString << "Terminal node: white in checkmate" << endl;
                 return std::make_pair(firstMove, INT_MIN);
             }
             else
             {
-                searchlog << depthString << "Terminal node: black in checkmate" << endl;
                 return std::make_pair(firstMove, INT_MAX);
             }
         }
         if (depth == 0)
         {
-            searchlog << depthString << "Terminal node: reached max depth" << endl;
             return std::make_pair(firstMove, Rating::getCentipawnValue(node));
         }
         if (node.getWhiteToMove())
@@ -48,7 +49,6 @@ public:
             string pseudoLegalMoves = moves.pseudoLegalMovesW(node);
             if (pseudoLegalMoves.length() == 0)
             {
-                searchlog << depthString << "Terminal node: stalemate" << endl;
                 return std::make_pair(firstMove, 0);
             }
             for (int i = 0; i < pseudoLegalMoves.length(); i += 4)
@@ -64,11 +64,11 @@ public:
                     std::pair<string, int> ab;
                     if (firstMove == "")
                     {
-                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, individualMoveString);
+                        ab = minimax(tNode, depth - 1, alpha, beta, individualMoveString, individualMoveString, breakOffTime);
                     }
                     else
                     {
-                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, firstMove);
+                        ab = minimax(tNode, depth - 1, alpha, beta, individualMoveString, firstMove, breakOffTime);
                     }
                     int val = ab.second;
                     string move = ab.first;
@@ -84,7 +84,6 @@ public:
                     }
                 }
             }
-            searchlog << depthString << "best move found: " << bestMove << " " << bestValue << endl;
             return std::make_pair(bestMove, bestValue);
         }
         else
@@ -109,11 +108,11 @@ public:
                     std::pair<string, int> ab;
                     if (firstMove == "")
                     {
-                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, individualMoveString);
+                        ab = minimax(tNode, depth - 1, alpha, beta, individualMoveString, individualMoveString, breakOffTime);
                     }
                     else
                     {
-                        ab = alphabeta(tNode, depth - 1, alpha, beta, individualMoveString, firstMove);
+                        ab = minimax(tNode, depth - 1, alpha, beta, individualMoveString, firstMove, breakOffTime);
                     }
                     int val = ab.second;
                     string move = ab.first;
@@ -129,9 +128,31 @@ public:
                     }
                 }
             }
-            searchlog << depthString << "best move found: " << bestMove << " " << bestValue << endl;
             return std::make_pair(bestMove, bestValue);
         }
+    }
+
+    static std::pair<string, int> iterativeDeepeningSearch(Board initialPosition, int maxDepth, milliseconds maxSearchTime)
+    {
+        std::pair<string, int> bestMove;
+        milliseconds startTime = duration_cast<milliseconds>(
+            system_clock::now().time_since_epoch());
+
+        for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++)
+        {
+
+            milliseconds currentTime = duration_cast<milliseconds>(
+                system_clock::now().time_since_epoch());
+            if (currentTime > startTime + maxSearchTime)
+            {
+                return bestMove;
+            }
+            std::pair<string, int> bestMoveFoundFromMinimax = minimax(initialPosition, currentDepth, INT_MIN, INT_MAX, "", "", startTime + maxSearchTime);
+            if (bestMoveFoundFromMinimax.first != "") {
+                bestMove = bestMoveFoundFromMinimax;
+            }
+        }
+        return bestMove;
     }
 };
 #endif // SEARCH_H_INCLUDED

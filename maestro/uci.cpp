@@ -72,6 +72,22 @@ int main()
         }
         else if (token == "go")
         {
+            vector<string> arguments = split(command);
+            int millisecondsLeft;
+            logInput(ucilog, "calculating milliseconds left...");
+            if (board.getWhiteToMove())
+            {
+                millisecondsLeft = std::stoi(arguments.at(arguments.size() - 7));
+            }
+            else
+            {
+                millisecondsLeft = std::stoi(arguments.at(arguments.size() - 5));
+            }
+            logInput(ucilog, "milliseconds left: " + to_string(millisecondsLeft));
+            string selectedMove = Search::iterativeDeepeningSearch(board, 5, std::chrono::milliseconds(millisecondsLeft / 20)).first;
+            tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
+            board = moves.makeMoveAll(board, selectedMove);
+            logInput(ucilog, "board after move: " + board.fen());
         }
         else if (token == "ucinewgame")
         {
@@ -79,23 +95,18 @@ int main()
         }
         else if (token == "position")
         {
-
+            logInput(ucilog, "setting board: ");
             vector<string> arguments = split(command);
             string finalArgument = arguments.at(arguments.size() - 1);
             if (finalArgument == "startpos")
             {
-                string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
-                tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
-                board = moves.makeMoveAll(board, selectedMove);
-                logInput(ucilog, "board after move: " + board.fen());
+                board = Board::initiateStandardChess();
+                logInput(ucilog, "     initial position");
             }
             else
             {
                 board = moves.makeMoveAll(board, moves.convertMoveToMaestroIntString(finalArgument, board));
-                string selectedMove = Search::alphabeta(board, 5, INT_MIN, INT_MAX, "", "").first;
-                tellUCI(ucilog, "bestmove " + moves.convertMoveToAlgebraUCI(selectedMove, board) + "\n");
-                board = moves.makeMoveAll(board, selectedMove);
-                logInput(ucilog, "board after move: " + board.fen());
+                logInput(ucilog, board.fen());
             }
         }
 
