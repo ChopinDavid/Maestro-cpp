@@ -743,7 +743,7 @@ public:
             char character = binaryR[i];
             if (character == '1')
             {
-                uint64_t possibleDestinations = horizontalAndVerticalMovesOld(board, i);
+                uint64_t possibleDestinations = horizontalAndVerticalMoves(board, i);
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
             }
         }
@@ -770,7 +770,7 @@ public:
             char character = binaryQ[i];
             if (character == '1')
             {
-                uint64_t hv = horizontalAndVerticalMovesOld(board, i);
+                uint64_t hv = horizontalAndVerticalMoves(board, i);
                 uint64_t da = diagonalAndAntiDiagonalMoves(board, i);
                 uint64_t possibleDestinations = hv | da;
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
