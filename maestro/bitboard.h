@@ -23,6 +23,14 @@ extern uint64_t fileMasks8[8];
 extern uint64_t diagonalMasks8[15];
 extern uint64_t antiDiagonalMasks8[15];
 
+extern uint64_t flipDiagA1H8(uint64_t s);
+
+extern uint64_t flipVertical(uint64_t s);
+
+extern uint64_t rotate90clockwise(uint64_t s);
+
+extern uint64_t rotate90antiClockwise(uint64_t s);
+
 extern string convertBitboardToStringRep(uint64_t bitboard); // namespace
 
 #endif // #ifndef BITBOARD_H_INCLUDED

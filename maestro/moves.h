@@ -28,213 +28,142 @@ public:
 
     uint64_t horizontalAndVerticalMoves(Board board, int s)
     {
-        uint64_t myPieces;
-        if (board.getWhiteToMove())
+        uint64_t occupied = board.occupied();
+        uint64_t fileMask = fileMasks8[s % 8];
+        uint64_t o = fileMask & occupied;
+        uint64_t r = 1ULL << s;
+        uint64_t oUpper = o & (r - 1);
+        uint64_t oLower = o & ~(r - 1) & ~r;
+        uint64_t upperBounds;
+        if (oUpper == 0)
         {
-            myPieces = board.whitePieces();
+            upperBounds = 0;
         }
         else
         {
-            myPieces = board.blackPieces();
+            upperBounds = (msb(oUpper) - 1);
         }
+        uint64_t lowerBounds;
+        if (oLower == 0)
+        {
+            lowerBounds = 0;
+        }
+        else
+        {
+            uint64_t lowerLSB = lsb(oLower);
+            lowerBounds = (oUpper - lowerLSB) & ~(lowerLSB | oUpper);
+        }
+        uint64_t attackMaskFile = (~(upperBounds | lowerBounds) & fileMask) ^ r;
 
-        uint64_t sBinary = 1ULL << s;
         uint64_t rankMask = rankMasks8[s / 8];
-        uint64_t fileMask = fileMasks8[s % 8];
-        uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
-        uint64_t blockersMask = board.occupied() & ~(sBinary);
-        uint64_t maskedBlockers = rookMask & blockersMask;
-        uint64_t possibleMoves = 0;
-        Direction direction = North;
-        uint64_t testingSquare = sBinary >> 8;
-
-        while (direction == North)
+        uint64_t rankMaskRotated = rotate90clockwise(rankMask);
+        uint64_t oRotated = rankMaskRotated & rotate90clockwise(occupied);
+        uint64_t rRotated = rotate90clockwise(r);
+        uint64_t oRotatedUpper;
+        if (rRotated < 256) {
+            oRotatedUpper = 0;
+        } else {
+            oRotatedUpper = oRotated & ((rRotated >> 7) - 1);
+        }
+         
+        uint64_t oRotatedLower = oRotated & ~((rRotated << 7) - 1) & ~rRotated;
+        uint64_t upperBoundsRotated;
+        if (oRotatedUpper == 0)
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) || testingSquare <= 0)
-            {
-                testingSquare = sBinary << 1;
-                direction = East;
-            }
-            else
-            {
-                possibleMoves |= testingSquare;
-                if (testingSquare >= 256 && ((testingSquare & maskedBlockers) == 0))
-                {
-                    testingSquare >>= 8;
-                }
-                else
-                {
-                    testingSquare = 0;
-                }
-            }
+            upperBoundsRotated = 0;
+        }
+        else
+        {
+            upperBoundsRotated = msb(oRotatedUpper) - 1;
         }
 
-        while (direction == East)
+        uint64_t lowerBoundsRotated;
+        if (oRotatedLower == 0)
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) | (testingSquare & fileA) != 0 || testingSquare == 0)
-            {
-                testingSquare = sBinary << 8;
-                direction = South;
-            }
-            else
-            {
-                possibleMoves |= testingSquare;
-                if (((testingSquare & maskedBlockers) == 0))
-                {
-                    testingSquare <<= 1;
-                }
-                else
-                {
-                    testingSquare = fileA;
-                }
-            }
+            lowerBoundsRotated = 0;
         }
-
-        while (direction == South)
+        else
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) || testingSquare >= UINT64_MAX || testingSquare == 0)
-            {
-                testingSquare = sBinary >> 1;
-                direction = West;
-            }
-            else
-            {
-                possibleMoves |= testingSquare;
-                if (testingSquare <= 36028797018963968 && ((testingSquare & maskedBlockers) == 0))
-                {
-                    testingSquare <<= 8;
-                }
-                else
-                {
-                    testingSquare = UINT64_MAX;
-                }
-            }
+            uint64_t lowerLSB = lsb(oRotatedLower);
+            lowerBoundsRotated = (oRotatedUpper - lowerLSB) & ~(lowerLSB | oRotatedUpper);
         }
+        uint64_t attackMaskRank = rotate90antiClockwise((~(upperBoundsRotated | lowerBoundsRotated) & rankMaskRotated) ^ rRotated);
 
-        while (testingSquare != 0)
+        uint64_t result;
+        if (board.getWhiteToMove())
         {
-            if (((testingSquare & maskedBlockers & myPieces) != 0) | (testingSquare & fileH) != 0)
-            {
-                testingSquare = 0;
-            }
-            else
-            {
-                possibleMoves |= testingSquare;
-                if ((testingSquare & maskedBlockers) == 0)
-                {
-                    testingSquare >>= 1;
-                }
-                else
-                {
-                    testingSquare = 0;
-                }
-            }
+            result = (attackMaskFile | attackMaskRank) & ~(board.whitePieces());
         }
-
-        return possibleMoves;
+        else
+        {
+            result = (attackMaskFile | attackMaskRank) & ~(board.blackPieces());
+        }
+        return result;
     }
 
     uint64_t coveredHorizontalAndVericalSquares(Board board, int s)
     {
-        uint64_t myPieces;
-        if (board.getWhiteToMove())
+        uint64_t occupied = board.occupied();
+        uint64_t fileMask = fileMasks8[s % 8];
+        uint64_t o = fileMask & occupied;
+        uint64_t r = 1ULL << s;
+        uint64_t oUpper = o & (r - 1);
+        uint64_t oLower = o & ~(r - 1) & ~r;
+        uint64_t upperBounds;
+        if (oUpper == 0)
         {
-            myPieces = board.whitePieces();
+            upperBounds = 0;
         }
         else
         {
-            myPieces = board.blackPieces();
+            upperBounds = (msb(oUpper) - 1);
         }
-        uint64_t sBinary = 1ULL << s;
+        uint64_t lowerBounds;
+        if (oLower == 0)
+        {
+            lowerBounds = 0;
+        }
+        else
+        {
+            uint64_t lowerLSB = lsb(oLower);
+            lowerBounds = (oUpper - lowerLSB) & ~(lowerLSB | oUpper);
+        }
+        uint64_t attackMaskFile = (~(upperBounds | lowerBounds) & fileMask) ^ r;
+
         uint64_t rankMask = rankMasks8[s / 8];
-        uint64_t fileMask = fileMasks8[s % 8];
-        uint64_t rookMask = (rankMask | fileMask) & ~(sBinary);
-        uint64_t blockersMask = board.occupied() & ~(sBinary);
-        uint64_t maskedBlockers = rookMask & blockersMask;
-        uint64_t coveredSquares = 0;
-        Direction direction = North;
-        uint64_t testingSquare = sBinary >> 8;
-
-        while (direction == North)
+        uint64_t rankMaskRotated = rotate90clockwise(rankMask);
+        uint64_t oRotated = rankMaskRotated & rotate90clockwise(occupied);
+        uint64_t rRotated = rotate90clockwise(r);
+        uint64_t oRotatedUpper;
+        if (rRotated < 256) {
+            oRotatedUpper = 0;
+        } else {
+            oRotatedUpper = oRotated & ((rRotated >> 7) - 1);
+        }
+         
+        uint64_t oRotatedLower = oRotated & ~((rRotated << 7) - 1) & ~rRotated;
+        uint64_t upperBoundsRotated;
+        if (oRotatedUpper == 0)
         {
-            if (testingSquare <= 0)
-            {
-                testingSquare = sBinary << 1;
-                direction = East;
-            }
-            else if (((testingSquare & maskedBlockers) != 0))
-            {
-                coveredSquares |= testingSquare;
-                testingSquare = sBinary << 1;
-                direction = East;
-            }
-            else
-            {
-                coveredSquares |= testingSquare;
-                testingSquare >>= 8;
-            }
+            upperBoundsRotated = 0;
+        }
+        else
+        {
+            upperBoundsRotated = msb(oRotatedUpper) - 1;
         }
 
-        while (direction == East)
+        uint64_t lowerBoundsRotated;
+        if (oRotatedLower == 0)
         {
-
-            if ((testingSquare & fileA) != 0 || testingSquare == 0)
-            {
-                testingSquare = sBinary << 8;
-                direction = South;
-            }
-            else if (((testingSquare & maskedBlockers) != 0))
-            {
-                coveredSquares |= testingSquare;
-                testingSquare = sBinary << 8;
-                direction = South;
-            }
-            else
-            {
-                coveredSquares |= testingSquare;
-                testingSquare <<= 1;
-            }
+            lowerBoundsRotated = 0;
         }
-
-        while (direction == South)
+        else
         {
-            if (testingSquare >= UINT64_MAX || testingSquare == 0)
-            {
-                testingSquare = sBinary >> 1;
-                direction = West;
-            }
-            else if (((testingSquare & maskedBlockers) != 0))
-            {
-                coveredSquares |= testingSquare;
-                testingSquare = sBinary >> 1;
-                direction = West;
-            }
-            else
-            {
-                coveredSquares |= testingSquare;
-                testingSquare <<= 8;
-            }
+            uint64_t lowerLSB = lsb(oRotatedLower);
+            lowerBoundsRotated = (oRotatedUpper - lowerLSB) & ~(lowerLSB | oRotatedUpper);
         }
-
-        while (testingSquare != 0)
-        {
-            if ((testingSquare & fileH) != 0)
-            {
-                testingSquare = 0;
-            }
-            else if (((testingSquare & maskedBlockers) != 0))
-            {
-                coveredSquares |= testingSquare;
-                testingSquare = 0;
-            }
-            else
-            {
-                coveredSquares |= testingSquare;
-                testingSquare >>= 1;
-            }
-        }
-
-        return coveredSquares;
+        uint64_t attackMaskRank = rotate90antiClockwise((~(upperBoundsRotated | lowerBoundsRotated) & rankMaskRotated) ^ rRotated);
+        return attackMaskFile | attackMaskRank;
     }
 
     uint64_t diagonalAndAntiDiagonalMoves(Board board, int s)
@@ -814,7 +743,7 @@ public:
             char character = binaryR[i];
             if (character == '1')
             {
-                uint64_t possibleDestinations = horizontalAndVerticalMoves(board, i);
+                uint64_t possibleDestinations = horizontalAndVerticalMovesOld(board, i);
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
             }
         }
@@ -841,7 +770,7 @@ public:
             char character = binaryQ[i];
             if (character == '1')
             {
-                uint64_t hv = horizontalAndVerticalMoves(board, i);
+                uint64_t hv = horizontalAndVerticalMovesOld(board, i);
                 uint64_t da = diagonalAndAntiDiagonalMoves(board, i);
                 uint64_t possibleDestinations = hv | da;
                 movesList += convertStartAndPossibleDestinationsToMovesString(i, possibleDestinations);
@@ -1204,7 +1133,8 @@ public:
         return list;
     }
 
-    bool isCheckmate(Board board) {
+    bool isCheckmate(Board board)
+    {
         bool isCheckmate = false;
         if (board.getWhiteToMove() && (unsafeForWhite(board) & board.getWK()) != 0)
         {
@@ -2188,7 +2118,6 @@ public:
             {
                 strippedString += 'p';
             }
-            
         }
         else if (isEP)
         {
@@ -2349,6 +2278,26 @@ public:
             return 0;
             break;
         }
+    }
+
+    uint64_t msb(uint64_t bb)
+    {
+        if (bb == 0)
+            return 0;
+
+        uint64_t msb = 0;
+        bb = bb / 2;
+        while (bb != 0)
+        {
+            bb = bb / 2;
+            msb++;
+        }
+
+        return (1ULL << msb);
+    }
+
+    uint64_t lsb(uint64_t bb) {
+        return ( bb & ~(bb-1) );
     }
 };
 

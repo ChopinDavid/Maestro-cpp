@@ -9,9 +9,9 @@ using namespace std;
 int main()
 {
     Perft &perft = Perft::getInstance();
-    Board board = Board::from("r1b2rk1/ppppqpp1/2n2n1p/2b1p3/2B1P3/2NPBN2/PPPQ1PPP/R3K2R w KQ - 4 8");
+    Board board = Board::from("KR6/8/8/8/8/8/8/6rk w - - 0 1");
     auto start_time = std::chrono::high_resolution_clock::now();
-    perft.perft(board, 3);
+    perft.perft(board, 4);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time = end_time - start_time;
     std::cout << "took " << time/std::chrono::milliseconds(1) << "ms to run.\n";
