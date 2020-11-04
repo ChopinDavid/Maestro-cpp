@@ -86,10 +86,14 @@ function streamGame(id) {
         headers: { 'Authorization': 'Bearer ' + personalToken }
     };
     https.get(options, function (res) {
+        
         res.on('error', function (err) {
             console.log(err);
         });
         res.on('data', function (chunk) {
+            if (!inGame) {
+                res.destroy();
+            }
             var textChunk = chunk.toString('utf8');
             try {
                 var jsonChunk = JSON.parse(textChunk);
@@ -113,7 +117,6 @@ function streamGame(id) {
                         }
 
                     case 'gameFull':
-                        inGame = true;
                         moveCount = 0;
                         currentGameId = jsonChunk.id;
                         if (jsonChunk.white.id == "maestrobot") {
@@ -126,7 +129,7 @@ function streamGame(id) {
                             currentOpponentUsername = jsonChunk.white.name;
                             console.log("isblack");
                             isWhite = false;
-                            if (jsonChunk.state.moves != null) {
+                            if (jsonChunk.state.moves != null && jsonChunk.state.moves != undefined && jsonChunk.state.moves != "") {
                                 engineStream.stdin.write(`position startpos moves ${jsonChunk.state.moves}\n`);
                                 engineStream.stdin.write(`go wtime ${jsonChunk.state.wtime} btime ${jsonChunk.state.btime} winc ${jsonChunk.state.winc} binc ${jsonChunk.state.binc}\n`);
                             }
@@ -190,23 +193,20 @@ function go() {
                 console.log(jsonChunk);
                 switch (jsonChunk.type) {
                     case 'challenge':
-                        if (!inGame) {
+                        if (!inGame && jsonChunk.challenge.speed != "correspondence" && jsonChunk.challenge.variant.key == "standard") {
                             startEngine(() => {
                                 acceptChallenge(jsonChunk.challenge.id);
                             });
                         }
                         break;
                     case 'gameStart':
+                        inGame = true;
                         streamGame(jsonChunk.game.id);
                         break;
                     case 'gameFinish':
-                        var tempOpponentUsername = currentOpponentUsername;
                         currentOpponentUsername = null;
                         inGame = false;
                         endEngine();
-                        startEngine(() => {
-                            createChallenge(tempOpponentUsername);
-                        });
 
                     case 'challengeDeclined':
                         endEngine();

@@ -4,6 +4,7 @@
 #include "board.h"
 #include "bitboard.h"
 #include "direction.h"
+#include "logger.h"
 #include <stdint.h>
 #include <iostream>
 #include <string>
@@ -60,12 +61,15 @@ public:
         uint64_t oRotated = rankMaskRotated & rotate90clockwise(occupied);
         uint64_t rRotated = rotate90clockwise(r);
         uint64_t oRotatedUpper;
-        if (rRotated < 256) {
+        if (rRotated < 256)
+        {
             oRotatedUpper = 0;
-        } else {
+        }
+        else
+        {
             oRotatedUpper = oRotated & ((rRotated >> 7) - 1);
         }
-         
+
         uint64_t oRotatedLower = oRotated & ~((rRotated << 7) - 1) & ~rRotated;
         uint64_t upperBoundsRotated;
         if (oRotatedUpper == 0)
@@ -135,12 +139,15 @@ public:
         uint64_t oRotated = rankMaskRotated & rotate90clockwise(occupied);
         uint64_t rRotated = rotate90clockwise(r);
         uint64_t oRotatedUpper;
-        if (rRotated < 256) {
+        if (rRotated < 256)
+        {
             oRotatedUpper = 0;
-        } else {
+        }
+        else
+        {
             oRotatedUpper = oRotated & ((rRotated >> 7) - 1);
         }
-         
+
         uint64_t oRotatedLower = oRotated & ~((rRotated << 7) - 1) & ~rRotated;
         uint64_t upperBoundsRotated;
         if (oRotatedUpper == 0)
@@ -997,7 +1004,6 @@ public:
             kingCaptures &= ~filesAB;
         }
         unsafe |= kingCaptures;
-
         return unsafe;
     }
 
@@ -1327,6 +1333,8 @@ public:
 
     Board makeMoveAll(Board board, string move)
     {
+        cout << "board before making move: " << board.fen() << endl;
+        cout << "making move: " << move << endl;
         uint64_t tWP = makeMoveSinglePiece(board, board.getWP(), move, 'P');
         uint64_t tWN = makeMoveSinglePiece(board, board.getWN(), move, 'N');
         uint64_t tWB = makeMoveSinglePiece(board, board.getWB(), move, 'B');
@@ -1369,6 +1377,7 @@ public:
         }
 
         Board newBoard = Board(tWP, tWN, tWB, tWR, tWQ, tWK, tBP, tBN, tBB, tBR, tBQ, tBK, tEP, tHalfMoveClock, tMoveNumber, tWhiteToMove, tCWK, tCWQ, tCBK, tCBQ);
+        cout << "board after making move: " << newBoard.fen() << endl;
         return newBoard;
     }
 
@@ -2296,8 +2305,9 @@ public:
         return (1ULL << msb);
     }
 
-    uint64_t lsb(uint64_t bb) {
-        return ( bb & ~(bb-1) );
+    uint64_t lsb(uint64_t bb)
+    {
+        return (bb & ~(bb - 1));
     }
 };
 

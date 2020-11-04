@@ -36,7 +36,7 @@ public:
             if (character == '1')
             {
                 centipawnValue += 100;
-                centipawnValue += whitePawnSquareTable[i];
+                centipawnValue += pieceSquareTables::whitePawnSquareTable[i];
             }
         }
 
@@ -47,7 +47,7 @@ public:
             if (character == '1')
             {
                 centipawnValue += 416;
-                centipawnValue += whiteKnightSquareTable[i];
+                centipawnValue += pieceSquareTables::whiteKnightSquareTable[i];
             }
         }
 
@@ -58,7 +58,7 @@ public:
             if (character == '1')
             {
                 centipawnValue += 441;
-                centipawnValue += whiteBishopSquareTable[i];
+                centipawnValue += pieceSquareTables::whiteBishopSquareTable[i];
             }
         }
 
@@ -69,7 +69,7 @@ public:
             if (character == '1')
             {
                 centipawnValue += 663;
-                centipawnValue += whiteRookSquareTable[i];
+                centipawnValue += pieceSquareTables::whiteRookSquareTable[i];
             }
         }
 
@@ -80,7 +80,7 @@ public:
             if (character == '1')
             {
                 centipawnValue += 1292;
-                centipawnValue += whiteQueenSquareTable[i];
+                centipawnValue += pieceSquareTables::whiteQueenSquareTable[i];
             }
         }
 
@@ -91,9 +91,9 @@ public:
             if (character == '1')
             {
                 if (board.getPhase() == OpeningMiddle) {
-                    centipawnValue += whiteKingMiddleSquareTable[i];
+                    centipawnValue += pieceSquareTables::whiteKingMiddleSquareTable[i];
                 } else {
-                    centipawnValue += whiteKingEndSquareTable[i];
+                    centipawnValue += pieceSquareTables::whiteKingEndSquareTable[i];
                 }
             }
         }
@@ -111,7 +111,7 @@ public:
             if (character == '1')
             {
                 centipawnValue -= 100;
-                centipawnValue -= blackPawnSquareTable[i];
+                centipawnValue -= pieceSquareTables::blackPawnSquareTable[i];
             }
         }
 
@@ -122,7 +122,7 @@ public:
             if (character == '1')
             {
                 centipawnValue -= 416;
-                centipawnValue -= blackKnightSquareTable[i];
+                centipawnValue -= pieceSquareTables::blackKnightSquareTable[i];
             }
         }
 
@@ -133,7 +133,7 @@ public:
             if (character == '1')
             {
                 centipawnValue -= 441;
-                centipawnValue -= blackBishopSquareTable[i];
+                centipawnValue -= pieceSquareTables::blackBishopSquareTable[i];
             }
         }
 
@@ -144,7 +144,7 @@ public:
             if (character == '1')
             {
                 centipawnValue -= 663;
-                centipawnValue -= blackRookSquareTable[i];
+                centipawnValue -= pieceSquareTables::blackRookSquareTable[i];
             }
         }
 
@@ -155,7 +155,7 @@ public:
             if (character == '1')
             {
                 centipawnValue -= 1292;
-                centipawnValue -= blackQueenSquareTable[i];
+                centipawnValue -= pieceSquareTables::blackQueenSquareTable[i];
             }
         }
 

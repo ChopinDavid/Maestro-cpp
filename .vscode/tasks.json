@@ -15,6 +15,12 @@
                 "${workspaceFolder}\\maestro\\bitboard.cpp",
                 "-o",
                 "${workspaceFolder}\\maestro\\bitboard.exe",
+                "${workspaceFolder}\\maestro\\zobrist.cpp",
+                "-o",
+                "${workspaceFolder}\\maestro\\zobrist.exe",
+                "${workspaceFolder}\\maestro\\search.cpp",
+                "-o",
+                "${workspaceFolder}\\maestro\\search.exe",
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
